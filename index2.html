@@ -103,8 +103,8 @@
                 <span id="lockStatusText" style="color:#0f0">SÒNG ĐANG MỞ</span>
             </div>
             <div style="display:flex; gap:10px; margin-bottom:12px;">
-                <button onclick="setLocalLock(true)" class="btn-adm" style="background:#b71c1c;">KHÓA SÒNG</button>
-                <button onclick="setLocalLock(false)" class="btn-adm" style="background:#2e7d32;">MỞ CƯỢC</button>
+                <button id="btnLock" onclick="setLocalLock(true)" class="btn-adm" style="background:#b71c1c;">KHÓA SÒNG</button>
+                <button id="btnUnlock" onclick="setLocalLock(false)" class="btn-adm" style="background:#2e7d32;">MỞ CƯỢC</button>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <input type="number" id="inpWR" class="u-input-short" placeholder="%">
@@ -143,7 +143,7 @@ function formatMoney(n) {
     return (n / 1000000000).toFixed(1) + "B";
 }
 
-// XÁC NHẬN KHI THOÁT
+// XÁC NHẬN KHI THOÁT - CHUYỂN VỀ index.html
 function confirmExit() {
     if(confirm("Bạn có chắc chắn muốn rời sòng để về sảnh không?")) {
         window.location.href = 'index.html';
@@ -163,16 +163,27 @@ auth.onAuthStateChanged(user => {
                 document.getElementById("adminPanel").style.display = "block";
                 if(userData.isSuperAdmin) {
                     document.getElementById("cardSAD").style.display = "block";
-                    db.ref('users').once('value', loadUserList); 
+                    db.ref('users').once('value', loadUserList);
                 }
             }
             updateChips();
         });
-    } else { window.location.href = "Sanh.html"; }
+    } else { window.location.href = "index.html"; }
 });
 
+// LISTENER: KICK MEMBER VỀ index.html KHI KHÓA CƯỢC
 db.ref('game_taixiu_settings').on('value', s => {
     gameSettings = s.val() || { isLocked: false, winRate: 20 };
+    
+    // TỰ ĐỘNG ĐÁ MEMBER RA SẢNH KÈM THÔNG BÁO BẢO TRÌ
+    if (gameSettings.isLocked) {
+        if (userData && !userData.isAdmin && !userData.isSuperAdmin) {
+            alert("⚠️ TRÒ CHƠI ĐANG BẢO TRÌ!\nVui lòng quay lại sau.");
+            window.location.href = "index.html";
+            return;
+        }
+    }
+
     document.getElementById("localLockBanner").style.display = gameSettings.isLocked ? "block" : "none";
     const lockTxt = document.getElementById("lockStatusText");
     if(lockTxt) {
@@ -182,7 +193,6 @@ db.ref('game_taixiu_settings').on('value', s => {
     document.getElementById("wrDisp").innerText = gameSettings.winRate || 20;
     const fStatus = document.getElementById("forceStatusDisp");
     if(fStatus) fStatus.innerText = gameSettings.forcedResult ? "ĐANG ÉP: " + gameSettings.forcedResult.toUpperCase() : "CHẾ ĐỘ: TỰ NHIÊN";
-    if(gameSettings.isLocked && userData && !userData.isAdmin && !userData.isSuperAdmin) window.location.href = "Sanh.html";
 });
 
 function setLocalLock(s) { db.ref('game_taixiu_settings').update({ isLocked: s }); }
@@ -227,6 +237,11 @@ function chooseBet(c) {
 }
 
 function rollDice() {
+    // CHẶN QUAY THƯỞNG KHI ĐANG KHÓA CƯỢC
+    if (gameSettings.isLocked && !userData.isAdmin && !userData.isSuperAdmin) {
+        return alert("Sòng đang bảo trì, không thể quay thưởng!");
+    }
+
     if(isRolling || !selectedChoice || userData.money < selectedAmount) return alert("HÃY ĐẶT CƯỢC!");
     isRolling = true;
     const rollBtn = document.getElementById("btnRoll");
@@ -287,7 +302,7 @@ function updateChips() {
 
 db.ref('history').limitToLast(12).on('value', s => {
     let h = ""; const d = s.val();
-    if(d) Object.values(d).forEach(i => { 
+    if(d) Object.values(d).forEach(i => {
         h += `<div style="width:22px;height:22px;border-radius:50%;border:1px solid #fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;background:${i.res=='Tài'?'linear-gradient(#ff5722,#bf360c)':'linear-gradient(#2196f3,#0d47a1)'}">${i.res[0]}</div>`; 
     });
     document.getElementById("historyList").innerHTML = h;
