@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
-        /* CSS CHI TIẾT TỐI ĐA - GIỮ NGUYÊN 100% */
+        /* CSS CHI TIẾT TỐI ĐA - GIỮ NGUYÊN VÀ CẬP NHẬT */
         * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); outline: none; margin: 0; padding: 0; }
         html, body { background-color: #000; background-image: radial-gradient(circle at 50% 50%, #4a0000 0%, #2a0000 45%, #000 100%); background-attachment: fixed; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; min-height: 100vh; }
         #loginPanel, #lobbyPanel { width: 100%; max-width: 500px; margin: 0 auto; padding: 25px 20px; }
@@ -21,11 +21,16 @@
         .marquee-text { display: inline-block; white-space: nowrap; color: #ffd700; font-size: 15px; font-weight: 900; animation: marquee-run 16s linear infinite; }
         @keyframes marquee-run { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         #lockBanner { background: linear-gradient(to right, #b71c1c, #ff0000); color: #fff; padding: 18px; text-align: center; font-weight: 900; border-radius: 25px; border: 2px solid #fff; margin-bottom: 25px; display: none; box-shadow: 0 0 30px rgba(255,0,0,0.6); }
-        .btn-play-card { position: relative; padding: 50px 10px; border-radius: 45px; border: 2px solid rgba(255, 215, 0, 0.35); cursor: pointer; margin-bottom: 25px; text-align: center; background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent); overflow: hidden; }
+        
+        /* CARD GAME */
+        .btn-play-card { position: relative; padding: 45px 10px; border-radius: 45px; border: 2px solid rgba(255, 215, 0, 0.35); cursor: pointer; margin-bottom: 25px; text-align: center; background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent); overflow: hidden; transition: all 0.3s; }
+        .btn-play-card:active { transform: scale(0.96); filter: brightness(1.2); }
         .badge-hot { position: absolute; top: 15px; right: 15px; background: #ff0000; color: #fff; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 10px; animation: pulse-hot 1s infinite; }
         .badge-soon { position: absolute; top: 15px; right: 15px; background: #555; color: #fff; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 10px; }
         @keyframes pulse-hot { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .slogan-ultimate { color: #999; font-size: 3.2vw; max-font-size: 13px; margin-top: 15px; font-style: italic; font-weight: 800; white-space: nowrap; display: block; width: 100%; text-transform: uppercase; }
+        .slogan-ultimate { color: #999; font-size: 3.2vw; max-font-size: 13px; margin-top: 15px; font-style: italic; font-weight: 800; white-space: nowrap; display: block; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* SAD DASHBOARD */
         .sad-dashboard { background: rgba(0, 0, 0, 0.99); border: 2px solid #ff0000; border-radius: 50px; padding: 30px 15px; margin-top: 40px; margin-bottom: 100px; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
         .user-item-card { background: rgba(255, 255, 255, 0.02); padding: 18px; border-radius: 25px; margin-bottom: 15px; border: 1px solid #222; }
         .control-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
@@ -55,19 +60,26 @@
     <div class="marquee-box"><div id="marqueeText" class="marquee-text">Chào mừng quý khách đến với Royal Casino!</div></div>
     <div id="lockBanner">⚠️ MÁY CHỦ ĐANG BẢO TRÌ - TRÒ CHƠI TẠM KHÓA ⚠️</div>
 
-    <div style="padding:45px 20px; border-radius:50px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,215,0,0.3); margin-bottom:35px; text-align:center;">
+    <div style="padding:40px 20px; border-radius:50px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,215,0,0.3); margin-bottom:35px; text-align:center;">
         <div id="myRankDisplay" class="role-badge">MEMBER</div>
         <h2 id="lobbyName" style="color:#ffd700; margin-top:10px; margin-bottom:15px; font-size:30px; font-weight:900;">--</h2>
         <div style="color:#888; font-size:12px; font-weight:900; letter-spacing:2px; margin-bottom:5px; text-transform:uppercase;">SỐ DƯ TÀI KHOẢN</div>
         <div id="lobbyMoney" style="font-size:38px; color:#4caf50; font-weight:900; margin-bottom:30px;">0 $</div>
-        <button onclick="logout()" style="background:rgba(204,0,0,0.15); color:#ff5252; border:1px solid #ff5252; padding:18px 50px; border-radius:22px; font-weight:bold; cursor:pointer;">ĐĂNG XUẤT</button>
+        <button onclick="logout()" style="background:rgba(204,0,0,0.15); color:#ff5252; border:1px solid #ff5252; padding:15px 40px; border-radius:22px; font-weight:bold; cursor:pointer;">ĐĂNG XUẤT</button>
     </div>
 
-    <div id="btnPlay" onclick="enterGame()" class="btn-play-card">
+    <div id="btnTX" onclick="enterGame('index2.html')" class="btn-play-card">
         <div class="badge-hot">HOT</div>
         <div style="font-size:75px; margin-bottom:15px;">🎲</div>
-        <h3 id="btnPlayTitle" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">TÀI XỈU IMPERIAL</h3>
+        <h3 id="btnPlayTitleTX" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">TÀI XỈU IMPERIAL</h3>
         <span class="slogan-ultimate">NƠI ANH HÙNG HỘI TỤ - BẢN LĨNH ĐỊNH GIANG SƠN</span>
+    </div>
+
+    <div id="btnXD" onclick="enterGame('index3.html')" class="btn-play-card" style="background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), transparent); border-color: rgba(255, 0, 0, 0.3);">
+        <div class="badge-hot" style="background: #00c853;">NEW</div>
+        <div style="font-size:75px; margin-bottom:15px;">⚪🔴</div>
+        <h3 id="btnPlayTitleXD" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÓC ĐĨA IMPERIAL</h3>
+        <span class="slogan-ultimate">VỊ XÓC TÀI BA - VANG DANH THIÊN HẠ</span>
     </div>
 
     <div class="btn-play-card" style="opacity: 0.6; cursor: default; filter: grayscale(0.5);">
@@ -105,17 +117,17 @@ let userData = null, isServerLocked = false, inputCache = {};
 
 function formatMoney(n) {
     if (n < 1000) return n + " $";
-    if (n < 1_000_000) return (n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1) + "k";
-    if (n < 1_000_000_000) return (n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1) + "M";
-    if (n < 1_000_000_000_000) return (n / 1_000_000_000).toFixed(n % 1_000_000_000 === 0 ? 0 : 1) + "B";
-    return (n / 1_000_000_000_000).toFixed(n % 1_000_000_000_000 === 0 ? 0 : 1) + "T";
+    if (n < 1000000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
+    if (n < 1000000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + "M";
+    return (n / 1000000000).toFixed(n % 1000000000 === 0 ? 0 : 1) + "B";
 }
 
-function enterGame() {
+// HÀM VÀO GAME ĐÃ CẬP NHẬT CHO CẢ 2 GAME
+function enterGame(targetFile) {
     if(isServerLocked && !userData.isSuperAdmin && !userData.isAdmin) {
-        return alert("MÁY CHỦ ĐANG BẢO TRÌ!");
+        return alert("MÁY CHỦ ĐANG BẢO TRÌ! VUI LÒNG QUAY LẠI SAU.");
     }
-    window.location.href = "index2.html";
+    window.location.href = targetFile;
 }
 
 function editM(id, t) {
@@ -149,9 +161,21 @@ db.ref('server').on('value', s => {
     const banner = document.getElementById("lockBanner");
     if(banner) banner.style.display = isServerLocked ? "block" : "none";
     document.getElementById("marqueeText").innerText = data.notice;
-    const bPlay = document.getElementById("btnPlay");
-    if (isServerLocked) { bPlay.style.opacity = "0.3"; document.getElementById("btnPlayTitle").innerText = "MÁY CHỦ BẢO TRÌ"; }
-    else { bPlay.style.opacity = "1"; document.getElementById("btnPlayTitle").innerText = "TÀI XỈU IMPERIAL"; }
+    
+    // Cập nhật giao diện nút khi khóa
+    const btnTX = document.getElementById("btnTX");
+    const btnXD = document.getElementById("btnXD");
+    if (isServerLocked) { 
+        btnTX.style.opacity = "0.3"; 
+        btnXD.style.opacity = "0.3"; 
+        document.getElementById("btnPlayTitleTX").innerText = "MÁY CHỦ BẢO TRÌ";
+        document.getElementById("btnPlayTitleXD").innerText = "MÁY CHỦ BẢO TRÌ";
+    } else { 
+        btnTX.style.opacity = "1"; 
+        btnXD.style.opacity = "1";
+        document.getElementById("btnPlayTitleTX").innerText = "TÀI XỈU IMPERIAL";
+        document.getElementById("btnPlayTitleXD").innerText = "XÓC ĐĨA IMPERIAL";
+    }
     updateSrvButtons(isServerLocked);
 });
 
@@ -222,14 +246,10 @@ function login() {
 
 function register() {
     const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
-    
-    // ĐÃ CẬP NHẬT GIỚI HẠN 12 KÝ TỰ
     if(u.length < 3) return alert("Tên quá ngắn!");
     if(u.length > 12) return alert("Tên quá dài! (Tối đa 12 ký tự)"); 
     if(p.length < 6) return alert("Mật khẩu ít nhất 6 ký tự!");
-    
     document.getElementById("logStatusText").innerText = "ĐANG KIỂM TRA TÊN TÀI KHOẢN...";
-    
     auth.createUserWithEmailAndPassword(u + "@casino.com", p)
     .then(r => {
         document.getElementById("logStatusText").innerText = "ĐANG TẠO DỮ LIỆU...";
@@ -240,9 +260,7 @@ function register() {
             isSuperAdmin: false
         });
     })
-    .then(() => {
-        alert("ĐĂNG KÝ THÀNH CÔNG!");
-    })
+    .then(() => alert("ĐĂNG KÝ THÀNH CÔNG!"))
     .catch(e => {
         if(e.code === 'auth/email-already-in-use') alert("Tài khoản đã tồn tại!");
         else alert("Lỗi: " + e.message);
