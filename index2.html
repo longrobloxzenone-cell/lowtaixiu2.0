@@ -74,16 +74,20 @@
         <div class="chip" data-value="100000" style="background:#fb8c00;">100K</div>
         <div class="chip" data-value="500000" style="background:#e65100;">500K</div>
         <div class="chip" data-value="1000000" style="background:#0288d1;">1M</div>
-        <div class="chip" data-value="5000000" style="background:#01579b;">5M</div>
-        <div class="chip" data-value="10000000" style="background:#8e24aa;">10M</div>
-        <div class="chip" data-value="50000000" style="background:#6a1b9a;">50M</div>
+        <div class="chip" data-value="10000000" style="background:#01579b;">10M</div>
+        <div class="chip" data-value="50000000" style="background:#8e24aa;">50M</div>
         <div class="chip" data-value="100000000" style="background:#c2185b;">100M</div>
         <div class="chip" data-value="500000000" style="background:#880e4f;">500M</div>
-        <div class="chip" data-value="1000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">1T</div>
-        <div class="chip" data-value="5000000000" style="background:linear-gradient(#00e676,#00c853); color:#000;">5T</div>
-        <div class="chip" data-value="10000000000" style="background:linear-gradient(#00b0ff,#0091ea); color:#000;">10T</div>
-        <div class="chip" data-value="50000000000" style="background:linear-gradient(#d500f9,#aa00ff); color:#fff;">50T</div>
-        <div class="chip" data-value="100000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">100T</div>
+        <div class="chip" data-value="1000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">1B</div>
+        <div class="chip" data-value="10000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">10B</div>
+        <div class="chip" data-value="50000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">50B</div>
+        <div class="chip" data-value="100000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">100B</div>
+        <div class="chip" data-value="500000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">500B</div>
+        <div class="chip" data-value="1000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">1T</div>
+        <div class="chip" data-value="10000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">10T</div>
+        <div class="chip" data-value="50000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">50T</div>
+        <div class="chip" data-value="100000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">100T</div>
+        <div class="chip" data-value="500000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">500T</div>
     </div>
 
     <div style="display:flex; gap:12px; margin-bottom:15px;">
@@ -130,25 +134,20 @@
 </div>
 
 <script>
-// Firebase Config
 const firebaseConfig = { apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", authDomain: "tx888-85658.firebaseapp.com", databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", projectId: "tx888-85658", storageBucket: "tx888-85658.firebasestorage.app", messagingSenderId: "246211516842", appId: "1:246211516842:web:24a3598d54b037676c73d3" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database(), auth = firebase.auth();
-let userData = null, selectedAmount = 1000, selectedChoice = null, isRolling = false, gameSettings = { isLocked: false };
+let userData = null, selectedAmount = 1000, selectedChoice = null, isRolling = false, gameSettings = { isLocked: false, winRate: 20 };
 
 function formatMoney(n) {
     if (n < 1000) return n + " $";
     if (n < 1000000) return (n / 1000).toFixed(0) + "k";
     if (n < 1000000000) return (n / 1000000).toFixed(1) + "M";
-    return (n / 1000000000).toFixed(1) + "B";
+    if (n < 1000000000000) return (n / 1000000000).toFixed(1) + "B";
+    return (n / 1000000000000).toFixed(2) + "T";
 }
 
-// XÁC NHẬN KHI THOÁT - CHUYỂN VỀ index.html
-function confirmExit() {
-    if(confirm("Bạn có chắc chắn muốn rời sòng để về sảnh không?")) {
-        window.location.href = 'index.html';
-    }
-}
+function confirmExit() { if(confirm("Bạn có chắc chắn muốn rời sòng?")) window.location.href = 'index.html'; }
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -163,7 +162,7 @@ auth.onAuthStateChanged(user => {
                 document.getElementById("adminPanel").style.display = "block";
                 if(userData.isSuperAdmin) {
                     document.getElementById("cardSAD").style.display = "block";
-                    db.ref('users').once('value', loadUserList);
+                    db.ref('users').on('value', loadUserList);
                 }
             }
             updateChips();
@@ -171,26 +170,26 @@ auth.onAuthStateChanged(user => {
     } else { window.location.href = "index.html"; }
 });
 
-// LISTENER: KICK MEMBER VỀ index.html KHI KHÓA CƯỢC
 db.ref('game_taixiu_settings').on('value', s => {
-    gameSettings = s.val() || { isLocked: false, winRate: 20 };
-    
-    // TỰ ĐỘNG ĐÁ MEMBER RA SẢNH KÈM THÔNG BÁO BẢO TRÌ
-    if (gameSettings.isLocked) {
-        if (userData && !userData.isAdmin && !userData.isSuperAdmin) {
-            alert("⚠️ TRÒ CHƠI ĐANG BẢO TRÌ!\nVui lòng quay lại sau.");
-            window.location.href = "index.html";
-            return;
-        }
+    const data = s.val();
+    if(data) {
+        gameSettings.isLocked = data.isLocked || false;
+        // SỬA LỖI ĐỊNH DANH 0%: Kiểm tra xem có thuộc tính winRate không
+        gameSettings.winRate = (data.winRate !== undefined) ? data.winRate : 20;
+        gameSettings.forcedResult = data.forcedResult || null;
     }
 
+    if (gameSettings.isLocked && userData && !userData.isAdmin && !userData.isSuperAdmin) {
+        window.location.href = "index.html";
+        return;
+    }
     document.getElementById("localLockBanner").style.display = gameSettings.isLocked ? "block" : "none";
     const lockTxt = document.getElementById("lockStatusText");
     if(lockTxt) {
         lockTxt.innerText = gameSettings.isLocked ? "SÒNG ĐANG KHÓA" : "SÒNG ĐANG MỞ";
         lockTxt.style.color = gameSettings.isLocked ? "#f00" : "#0f0";
     }
-    document.getElementById("wrDisp").innerText = gameSettings.winRate || 20;
+    document.getElementById("wrDisp").innerText = gameSettings.winRate;
     const fStatus = document.getElementById("forceStatusDisp");
     if(fStatus) fStatus.innerText = gameSettings.forcedResult ? "ĐANG ÉP: " + gameSettings.forcedResult.toUpperCase() : "CHẾ ĐỘ: TỰ NHIÊN";
 });
@@ -199,22 +198,26 @@ function setLocalLock(s) { db.ref('game_taixiu_settings').update({ isLocked: s }
 function setForce(f) { db.ref('game_taixiu_settings').update({ forcedResult: f }); }
 function saveWR() {
     const val = parseInt(document.getElementById("inpWR").value);
-    if(val >= 0 && val <= 100) {
-        if(!userData.isSuperAdmin && val > 60) return alert("Admin tối đa 60%!");
-        db.ref('game_taixiu_settings').update({ winRate: val }).then(()=>alert("Đã lưu!"));
+    if(!isNaN(val) && val >= 0 && val <= 100) {
+        db.ref('game_taixiu_settings').update({ winRate: val }).then(()=>alert("Đã lưu tỉ lệ " + val + "%"));
     }
 }
 
 function loadUserList(snapshot) {
     let html = ""; const data = snapshot.val();
+    if(!data) return;
     let arr = Object.keys(data).map(id => ({ id, ...data[id] })).sort((a,b) => b.money - a.money);
     arr.forEach(u => {
         let bClass = u.isSuperAdmin ? "badge-sad" : (u.isAdmin ? "badge-ad" : "badge-mem");
         html += `<div class="user-row">
-            <div style="flex:1"><span class="u-name">${u.username}</span> <span class="u-badge ${bClass}">${u.isSuperAdmin?'SAD':(u.isAdmin?'AD':'MEM')}</span><br><span id="m-${u.id}" class="u-money" style="color:#0f0">${formatMoney(u.money)}</span></div>
+            <div style="flex:1">
+                <span class="u-name">${u.username}</span> 
+                <span class="u-badge ${bClass}">${u.isSuperAdmin?'SAD':(u.isAdmin?'AD':'MEM')}</span><br>
+                <span style="color:#0f0; font-weight:bold;">${formatMoney(u.money)}</span>
+            </div>
             <div style="display:flex; gap:5px;">
-                <button onclick="editMAdmin('${u.id}',1)" style="background:green; color:#fff; border:none; width:35px; height:35px; border-radius:8px; font-weight:bold;">+1M</button>
-                <button onclick="editMAdmin('${u.id}',-1)" style="background:red; color:#fff; border:none; width:35px; height:35px; border-radius:8px; font-weight:bold;">-1M</button>
+                <button onclick="editMAdmin('${u.id}',1)" style="background:green; color:#fff; border:none; width:40px; height:35px; border-radius:8px; font-weight:bold;">+1M</button>
+                <button onclick="editMAdmin('${u.id}',-1)" style="background:red; color:#fff; border:none; width:40px; height:35px; border-radius:8px; font-weight:bold;">-1M</button>
             </div>
         </div>`;
     });
@@ -223,7 +226,8 @@ function loadUserList(snapshot) {
 
 function editMAdmin(id, t) {
     db.ref('users/'+id+'/money').once('value', s => {
-        db.ref('users/'+id).update({ money: Math.max(0, s.val() + (t*1000000)) });
+        let currentMoney = s.val() || 0;
+        db.ref('users/'+id).update({ money: Math.max(0, currentMoney + (t*1000000)) });
     });
 }
 
@@ -233,33 +237,25 @@ function chooseBet(c) {
     document.querySelectorAll(".btn-bet").forEach(b => b.classList.remove("active-bet"));
     document.getElementById(c == 'Tài' ? "betTai" : "betXiu").classList.add("active-bet");
     document.getElementById("resultText").innerText = `CƯỢC ${formatMoney(selectedAmount)} VÀO ${c.toUpperCase()}`;
-    document.getElementById("resultText").className = "";
 }
 
 function rollDice() {
-    // CHẶN QUAY THƯỞNG KHI ĐANG KHÓA CƯỢC
-    if (gameSettings.isLocked && !userData.isAdmin && !userData.isSuperAdmin) {
-        return alert("Sòng đang bảo trì, không thể quay thưởng!");
-    }
-
+    if (gameSettings.isLocked && !userData.isAdmin && !userData.isSuperAdmin) return alert("Bảo trì!");
     if(isRolling || !selectedChoice || userData.money < selectedAmount) return alert("HÃY ĐẶT CƯỢC!");
     isRolling = true;
-    const rollBtn = document.getElementById("btnRoll");
-    const resTxt = document.getElementById("resultText");
+    const rollBtn = document.getElementById("btnRoll"), resTxt = document.getElementById("resultText");
     rollBtn.disabled = true; rollBtn.innerText = "ĐANG QUAY...";
-    resTxt.innerText = "ĐANG QUAY...";
-    resTxt.className = "";
-
     const betVal = selectedAmount;
     db.ref('users/' + userData.uid).update({ money: userData.money - betVal });
 
     db.ref('game_taixiu_settings').once('value', s => {
         const set = s.val() || { winRate: 20 };
+        const rate = (set.winRate !== undefined) ? set.winRate : 20;
         let d, sum, res, limit = 0;
         do {
             d = [Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1];
             sum = d[0]+d[1]+d[2]; res = sum >= 11 ? "Tài" : "Xỉu"; limit++;
-            let cond = set.forcedResult ? (res === set.forcedResult) : (Math.random() < (set.winRate/100) ? res === selectedChoice : res !== selectedChoice);
+            let cond = set.forcedResult ? (res === set.forcedResult) : (Math.random() < (rate/100) ? res === selectedChoice : res !== selectedChoice);
             if(cond || limit > 50) break;
         } while(true);
 
@@ -271,23 +267,13 @@ function rollDice() {
             if(count++ > 15) {
                 clearInterval(t);
                 document.getElementById("dice1").innerText = d[0]; document.getElementById("dice2").innerText = d[1]; document.getElementById("dice3").innerText = d[2];
-                
-                const win = (selectedChoice === res);
-                if(win) {
-                    resTxt.innerText = `THẮNG: ${res.toUpperCase()} (${sum})`;
-                    resTxt.className = "win-text";
-                    db.ref('users/'+userData.uid+'/money').once('value', sv => {
-                        db.ref('users/'+userData.uid).update({ money: sv.val() + (betVal * 2) });
-                    });
-                } else {
-                    resTxt.innerText = `THUA: ${res.toUpperCase()} (${sum})`;
-                    resTxt.className = "lose-text";
-                }
-                
+                if(selectedChoice === res) {
+                    resTxt.innerText = `THẮNG: ${res.toUpperCase()} (${sum})`; resTxt.className = "win-text";
+                    db.ref('users/'+userData.uid+'/money').once('value', sv => { db.ref('users/'+userData.uid).update({ money: sv.val() + (betVal * 2) }); });
+                } else { resTxt.innerText = `THUA: ${res.toUpperCase()} (${sum})`; resTxt.className = "lose-text"; }
                 db.ref('history').push({ res: res });
                 isRolling = false; rollBtn.disabled = false; rollBtn.innerText = "QUAY THƯỞNG";
-                selectedChoice = null;
-                document.querySelectorAll(".btn-bet").forEach(b => b.classList.remove("active-bet"));
+                selectedChoice = null; document.querySelectorAll(".btn-bet").forEach(b => b.classList.remove("active-bet"));
             }
         }, 60);
     });
@@ -295,7 +281,7 @@ function rollDice() {
 
 function updateChips() {
     document.querySelectorAll(".chip").forEach(c => {
-        if(userData.money < parseInt(c.dataset.value)) c.classList.add("disabled");
+        if(userData.money < parseFloat(c.dataset.value)) c.classList.add("disabled");
         else c.classList.remove("disabled");
     });
 }
@@ -311,7 +297,7 @@ db.ref('history').limitToLast(12).on('value', s => {
 document.querySelectorAll(".chip").forEach(chip => {
     chip.onclick = function() {
         if(isRolling) return;
-        selectedAmount = parseInt(this.dataset.value);
+        selectedAmount = parseFloat(this.dataset.value);
         document.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
         this.classList.add("selected");
         if(selectedChoice) chooseBet(selectedChoice);
