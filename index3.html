@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xóc Đĩa Imperial Master V156 - Ultimate Edition</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <style>
+        /* LUXURY VISUAL ENGINE */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; user-select: none; }
+        body { background: radial-gradient(circle at 50% 50%, #004d1a 0%, #001a0a 70%, #000 100%); color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        
+        #syncLoading { height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #000; position: fixed; inset: 0; z-index: 10000; }
+        .spinner { width: 70px; height: 70px; border: 7px solid rgba(255,215,0,0.1); border-top: 7px solid #ffd700; border-radius: 50%; animation: spin 1s linear infinite; box-shadow: 0 0 25px rgba(255,215,0,0.4); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { color: #ffd700; margin-top: 30px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; animation: pulse 1.5s infinite; white-space: nowrap; font-size: 13px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        #gamePanel { width: 100%; max-width: 500px; margin: 0 auto; padding: 10px; display: none; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.7); padding: 15px 20px; border-radius: 25px; border: 1px solid #ffd700; margin-bottom: 10px; backdrop-filter: blur(10px); }
+        .wallet-container { background: linear-gradient(180deg, rgba(255,215,0,0.25), rgba(0,0,0,0.95)); margin: 10px auto; padding: 20px; border-radius: 50px; border: 2px solid #ffd700; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        #money { font-size: 32px; color: #00ff41; font-weight: 900; text-shadow: 0 0 20px #00ff41; font-family: 'Consolas', monospace; }
+
+        .plate-area { position: relative; width: 240px; height: 240px; margin: 20px auto; background: #fff; border-radius: 50%; border: 15px solid #ffd700; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 50px #000; }
+        .vi-container { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; z-index: 2; }
+        .vi { width: 50px; height: 50px; border-radius: 50%; border: 3px solid rgba(0,0,0,0.3); }
+        .vi.red { background: radial-gradient(circle at 30% 30%, #ff0000, #600000); }
+        .vi.white { background: radial-gradient(circle at 30% 30%, #ffffff, #888); }
+        #bowl { position: absolute; width: 210px; height: 210px; background: radial-gradient(circle at 35% 35%, #fff, #999, #333); border-radius: 50%; border: 4px solid #fff; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 85px; transition: 0.9s cubic-bezier(0.68, -0.6, 0.3, 1.6); }
+        #bowl.shaking { animation: shakeHeavy 0.1s infinite; }
+        #bowl.opened { transform: translate(160px, -160px) rotate(45deg); opacity: 0; pointer-events: none; }
+        @keyframes shakeHeavy { 0% { transform: translate(5px, 5px); } 50% { transform: translate(-5px, -5px); } 100% { transform: translate(5px, -5px); } }
+
+        .bet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .bet-box { background: rgba(0,0,0,0.8); border: 2px solid rgba(255,215,0,0.3); border-radius: 20px; padding: 25px 5px; text-align: center; cursor: pointer; position: relative; transition: 0.3s; }
+        .bet-box.selected { border-color: #ffd700; background: rgba(255,215,0,0.3); box-shadow: 0 0 25px #ffd700; transform: translateY(-3px); }
+        .bet-amount { position: absolute; bottom: 5px; width: 100%; color: #00ff41; font-size: 11px; font-weight: 900; text-align: center; left: 0; }
+
+        /* FULL CHIP AREA */
+        .chip-wrapper { background: rgba(0,0,0,0.6); padding: 15px; border-radius: 25px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 0 15px #000; }
+        #chipArea { display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px; scrollbar-width: none; }
+        #chipArea::-webkit-scrollbar { display: none; }
+        .chip { min-width: 58px; height: 58px; border-radius: 50%; border: 3px dashed rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; cursor: pointer; color: #fff; text-shadow: 1px 1px 2px #000; flex-shrink: 0; }
+        .chip.active { transform: scale(1.15) translateY(-5px); border: 4px solid #ffd700; box-shadow: 0 0 20px #ffd700; }
+
+        #masterPanel { margin-top: 60px; padding: 35px 25px; background: rgba(10,0,0,0.98); border-top: 6px solid #ffd700; border-radius: 50px 50px 0 0; display: none; }
+        .adm-title { color: #ffd700; font-size: 18px; font-weight: 900; text-align: center; display: block; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 4px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .current-config { background: #111; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #ffd700; font-size: 12px; color: #aaa; line-height: 1.8; text-transform: uppercase; }
+        .rate-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1a1a1a; padding: 15px; border-radius: 12px; }
+        .rate-input { width: 90px; background: #000; border: 1px solid #ffd700; color: #0f0; text-align: center; font-weight: bold; border-radius: 8px; padding: 10px; font-size: 16px; }
+        .btn-save { width: 100%; padding: 22px; background: #ffd700; color: #000; font-weight: 900; border-radius: 15px; border: none; cursor: pointer; transition: 0.3s; font-size: 15px; }
+        .btn-save.success { background: #00c853 !important; color: #fff !important; }
+
+        #jackpotOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; text-align: center; }
+        .jackpot-text { font-size: 70px; font-weight: 900; color: #ffd700; text-shadow: 0 0 30px #fff, 0 0 50px #ffd700; animation: scaleUp 0.5s; }
+        @keyframes scaleUp { from { transform: scale(0); } to { transform: scale(1); } }
+        #serverNotice { position: fixed; top: 10px; left: 0; right: 0; background: rgba(255, 0, 0, 0.8); color: #fff; padding: 10px; font-weight: bold; text-align: center; z-index: 9999; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="syncLoading">
+    <div class="spinner"></div>
+    <div class="loading-text">ĐANG KẾT NỐI ĐẾN SÒNG XÓC ĐĨA...</div>
+</div>
+
+<div id="serverNotice">📢 THÔNG BÁO: CHÚC MỪNG QUÝ TỘC <span id="winnerName">...</span> VỪA NỔ JACKPOT X20!</div>
+
+<div id="jackpotOverlay">
+    <div style="color:#ffd700; font-weight:900; letter-spacing:8px; z-index:2; margin-bottom:10px;">IMPERIAL ROYALTY</div>
+    <div class="jackpot-text">JACKPOT X20</div>
+    <div id="jackpotVal" style="font-size: 55px; color: #00ff41; font-weight: 900; margin-top: 25px; z-index:2;">0 $</div>
+</div>
+
+<div id="gamePanel">
+    <div class="header-bar">
+        <button onclick="confirmExit()" style="background:#222; color:#ffd700; border:1px solid #ffd700; padding:8px 15px; border-radius:12px; font-size:11px; font-weight:bold; cursor:pointer;">← VỀ SẢNH</button>
+        <div id="displayUser" style="color:#ffd700; font-size:14px; font-weight:900;">👤 LOADING...</div>
+    </div>
+
+    <div class="wallet-container"><span style="color:#ffd700; font-weight:900;">SỐ DƯ:</span><div id="money">0 $</div></div>
+    
+    <div class="plate-area">
+        <div class="vi-container">
+            <div id="vi1" class="vi white"></div><div id="vi2" class="vi white"></div>
+            <div id="vi3" class="vi red"></div><div id="vi4" class="vi red"></div>
+        </div>
+        <div id="bowl">👑</div>
+    </div>
+
+    <div id="resultText" style="text-align:center; font-weight:900; color:#ffd700; text-transform:uppercase; height: 30px; margin: 15px 0; font-size: 18px;">HÃY ĐẶT CƯỢC...</div>
+
+    <div class="bet-grid">
+        <div class="bet-box" onclick="placeBet('Chẵn')"><div style="font-weight:900; font-size:22px; color:#ff4d4d;">CHẴN</div><div style="color:#ffd700;">x2.0</div><div id="amt-Chẵn" class="bet-amount"></div></div>
+        <div class="bet-box" onclick="placeBet('Lẻ')"><div style="font-weight:900; font-size:22px;">LẺ</div><div style="color:#ffd700;">x2.0</div><div id="amt-Lẻ" class="bet-amount"></div></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:15px;">
+        <div class="bet-box" onclick="placeBet('4 Đỏ')"><div style="color:#ff4d4d; font-weight:900; font-size:13px;">4 ĐỎ</div><div style="font-size:10px;">x20</div><div id="amt-4 Đỏ" class="bet-amount"></div></div>
+        <div class="bet-box" onclick="placeBet('4 Trắng')"><div style="font-weight:900; font-size:13px;">4 TRẮNG</div><div style="font-size:10px;">x20</div><div id="amt-4 Trắng" class="bet-amount"></div></div>
+        <div class="bet-box" onclick="placeBet('3 Đỏ')"><div style="color:#ff4d4d; font-weight:900; font-size:13px;">3 ĐỎ</div><div style="font-size:10px;">x5.0</div><div id="amt-3 Đỏ" class="bet-amount"></div></div>
+        <div class="bet-box" onclick="placeBet('3 Trắng')"><div style="font-weight:900; font-size:13px;">3 TRẮNG</div><div style="font-size:10px;">x5.0</div><div id="amt-3 Trắng" class="bet-amount"></div></div>
+        <div class="bet-box" onclick="placeBet('2 Trắng 2 Đỏ')"><div style="font-size:10px; font-weight:900;">VỊ 2-2</div><div style="font-size:10px;">x3.0</div><div id="amt-2 Trắng 2 Đỏ" class="bet-amount"></div></div>
+        <div class="bet-box" onclick="clearBet()" style="background:#333;"><div style="font-weight:900; font-size:14px;">XÓA</div></div>
+    </div>
+
+    <div class="chip-wrapper">
+        <div id="chipArea">
+            <div class="chip active" data-value="1000" style="background:#2e7d32;">1K</div>
+            <div class="chip" data-value="10000" style="background:#1b5e20;">10K</div>
+            <div class="chip" data-value="50000" style="background:#01579b;">50K</div>
+            <div class="chip" data-value="100000" style="background:#0277bd;">100K</div>
+            <div class="chip" data-value="500000" style="background:#4a148c;">500K</div>
+            <div class="chip" data-value="1000000" style="background:#c62828;">1M</div>
+            <div class="chip" data-value="10000000" style="background:#d32f2f;">10M</div>
+            <div class="chip" data-value="50000000" style="background:#7b1fa2;">50M</div>
+            <div class="chip" data-value="100000000" style="background:#512da8;">100M</div>
+            <div class="chip" data-value="500000000" style="background:#303f9f;">500M</div>
+            <div class="chip" data-value="1000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">1B</div>
+            <div class="chip" data-value="10000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">10B</div>
+            <div class="chip" data-value="50000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">50B</div>
+            <div class="chip" data-value="100000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">100B</div>
+            <div class="chip" data-value="500000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">500B</div>
+            <div class="chip" data-value="1000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">1T</div>
+            <div class="chip" data-value="100000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">100T</div>
+            <div class="chip" data-value="500000000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">500T</div>
+        </div>
+    </div>
+
+    <button id="btnRoll" onclick="shakeGame()" style="width:100%; padding:25px; background:linear-gradient(#ffd700, #b8860b); color:#000; font-weight:900; font-size:26px; border-radius:60px; border:none; cursor:pointer; box-shadow: 0 5px 15px #000;">BẮT ĐẦU XÓC</button>
+
+    <div id="masterPanel">
+        <span class="adm-title">Imperial Master Control</span>
+        <div class="current-config" id="configDisp">ĐANG TẢI DỮ LIỆU...</div>
+        <div class="rate-row">
+            <span style="color:#0f0; font-weight:bold;">TỈ LỆ THẮNG MEMBER</span>
+            <input type="number" class="rate-input" id="winRateUser" value="30">
+        </div>
+        <div id="rateInputs"></div>
+        <button id="btnSaveSetting" onclick="saveSettings()" class="btn-save">LƯU CẤU HÌNH MỚI</button>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = { apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", authDomain: "tx888-85658.firebaseapp.com", databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", projectId: "tx888-85658", storageBucket: "tx888-85658.firebasestorage.app", messagingSenderId: "246211516842", appId: "1:246211516842:web:24a3598d54b037676c73d3" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database(), auth = firebase.auth();
+
+let userData = null, selectedAmount = 1000, bets = {}, isPlaying = false;
+let gateRates = { "4 Đỏ": 5, "4 Trắng": 5, "3 Đỏ": 10, "3 Trắng": 10 }, userWinRate = 30;
+
+function formatMoney(n) {
+    if (n < 1000) return n + " $";
+    if (n < 1000000) return (n / 1000).toFixed(0) + "k";
+    if (n < 1000000000) return (n / 1000000).toFixed(1) + "M";
+    if (n < 1000000000000) return (n / 1000000000).toFixed(1) + "B";
+    // 1T = 1000B
+    return (n / 1000000000000).toFixed(1) + "T";
+}
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        db.ref('users/' + user.uid).once('value').then(s => {
+            userData = s.val(); if(!userData) { window.location.href="index.html"; return; }
+            userData.uid = user.uid;
+            document.getElementById("syncLoading").style.display = "none";
+            document.getElementById("gamePanel").style.display = "block";
+            
+            db.ref('users/' + user.uid + '/money').on('value', sm => {
+                userData.money = sm.val();
+                document.getElementById("money").innerText = formatMoney(userData.money);
+            });
+
+            document.getElementById("displayUser").innerText = "👤 " + userData.username.toUpperCase();
+            if(userData.isAdmin || userData.isSuperAdmin) {
+                document.getElementById("masterPanel").style.display = "block";
+                loadRatesUI();
+            }
+        });
+    } else window.location.href = "index.html";
+});
+
+db.ref('game_xocdia_settings').on('value', s => {
+    const data = s.val();
+    if(data) {
+        if(data.rates) gateRates = data.rates;
+        if(data.userWinRate !== undefined) userWinRate = data.userWinRate;
+        updateConfigDisp();
+        if(data.lastJackpot && data.lastJackpot.time > Date.now() - 10000) showBroadcast(data.lastJackpot.name);
+    }
+});
+
+function updateConfigDisp() {
+    const disp = document.getElementById("configDisp");
+    if(disp) disp.innerHTML = `SERVER: THẮNG ${userWinRate}% | 4Đ:${gateRates["4 Đỏ"]}% 4T:${gateRates["4 Trắng"]}%<br>3Đ:${gateRates["3 Đỏ"]}% 3T:${gateRates["3 Trắng"]}%`;
+}
+
+function loadRatesUI() {
+    let h = "";
+    ["4 Đỏ", "4 Trắng", "3 Đỏ", "3 Trắng"].forEach(g => {
+        h += `<div class="rate-row"><span>TỈ LỆ ${g}</span><input type="number" class="rate-input" id="rate-${g}" value="${gateRates[g] || 0}"> %</div>`;
+    });
+    document.getElementById("rateInputs").innerHTML = h;
+}
+
+function saveSettings() {
+    const btn = document.getElementById("btnSaveSetting");
+    btn.innerText = "ĐANG THỰC THI...";
+    const rates = {
+        "4 Đỏ": parseInt(document.getElementById("rate-4 Đỏ").value) || 0,
+        "4 Trắng": parseInt(document.getElementById("rate-4 Trắng").value) || 0,
+        "3 Đỏ": parseInt(document.getElementById("rate-3 Đỏ").value) || 0,
+        "3 Trắng": parseInt(document.getElementById("rate-3 Trắng").value) || 0
+    };
+    const winRate = parseInt(document.getElementById("winRateUser").value) || 0;
+    db.ref('game_xocdia_settings').update({ rates, userWinRate: winRate }).then(() => {
+        btn.classList.add("success"); btn.innerText = "ĐÃ LƯU THÀNH CÔNG!";
+        setTimeout(() => { btn.classList.remove("success"); btn.innerText = "LƯU CẤU HÌNH MỚI"; }, 4000);
+    });
+}
+
+function showBroadcast(name) {
+    const n = document.getElementById("serverNotice");
+    document.getElementById("winnerName").innerText = name.toUpperCase();
+    n.style.display = "block"; setTimeout(() => n.style.display = "none", 8000);
+}
+
+function placeBet(type) {
+    if(isPlaying) return;
+    if(userData.money < selectedAmount) return alert("Hết tiền!");
+    db.ref('users/' + userData.uid).update({ money: userData.money - selectedAmount });
+    bets[type] = (bets[type] || 0) + selectedAmount;
+    updateBetUI();
+}
+
+function clearBet() {
+    if(isPlaying) return;
+    let t = Object.values(bets).reduce((a, b) => a + b, 0);
+    if(t > 0) db.ref('users/' + userData.uid).update({ money: userData.money + t });
+    bets = {}; updateBetUI();
+}
+
+function updateBetUI() {
+    document.querySelectorAll('.bet-amount').forEach(a => a.innerText = "");
+    document.querySelectorAll('.bet-box').forEach(b => b.classList.remove('selected'));
+    for(let t in bets) {
+        const box = document.querySelector(`.bet-box[onclick*="'${t}'"]`);
+        if(box) { box.classList.add('selected'); document.getElementById("amt-"+t).innerText = formatMoney(bets[t]); }
+    }
+}
+
+function shakeGame() {
+    if(isPlaying || Object.keys(bets).length === 0) return alert("Vui lòng cược!");
+    isPlaying = true;
+    const bowl = document.getElementById("bowl");
+    bowl.classList.remove("opened"); bowl.classList.add("shaking");
+    document.getElementById("resultText").innerText = "ĐANG XÓC...";
+    
+    setTimeout(() => {
+        let reds = 2, rand = Math.random() * 100;
+        if (rand < gateRates["4 Đỏ"]) reds = 4;
+        else if (rand < (gateRates["4 Đỏ"] + gateRates["4 Trắng"])) reds = 0;
+        else if (rand < (gateRates["4 Đỏ"] + gateRates["4 Trắng"] + gateRates["3 Đỏ"])) reds = 3;
+        else if (rand < (gateRates["4 Đỏ"] + gateRates["4 Trắng"] + gateRates["3 Đỏ"] + gateRates["3 Trắng"])) reds = 1;
+        else {
+            let isWin = Math.random() * 100 < userWinRate;
+            let player = bets["Chẵn"] ? "Chẵn" : (bets["Lẻ"] ? "Lẻ" : null);
+            if(!player) reds = Math.random() > 0.5 ? 2 : 1;
+            else reds = isWin ? (player === "Chẵn" ? 2 : 3) : (player === "Chẵn" ? 1 : 2);
+        }
+
+        bowl.classList.remove("shaking");
+        for(let i=1; i<=4; i++) document.getElementById("vi"+i).className = "vi " + (i <= reds ? "red" : "white");
+        
+        setTimeout(() => {
+            bowl.classList.add("opened");
+            let side = (reds % 2 === 0) ? "Chẵn" : "Lẻ";
+            let win = 0;
+            if(bets["Chẵn"] && side === "Chẵn") win += bets["Chẵn"] * 2;
+            if(bets["Lẻ"] && side === "Lẻ") win += bets["Lẻ"] * 2;
+            if(bets["4 Đỏ"] && reds === 4) win += bets["4 Đỏ"] * 20;
+            if(bets["4 Trắng"] && reds === 0) win += bets["4 Trắng"] * 20;
+            if(bets["3 Đỏ"] && reds === 3) win += bets["3 Đỏ"] * 5;
+            if(bets["3 Trắng"] && reds === 1) win += bets["3 Trắng"] * 5;
+            if(bets["2 Trắng 2 Đỏ"] && reds === 2) win += bets["2 Trắng 2 Đỏ"] * 3;
+
+            if((reds === 4 || reds === 0) && win > 0) {
+                document.getElementById("jackpotOverlay").style.display = "flex";
+                document.getElementById("jackpotVal").innerText = "+" + formatMoney(win);
+                db.ref('game_xocdia_settings').update({ lastJackpot: { name: userData.username, time: Date.now() } });
+                setTimeout(() => document.getElementById("jackpotOverlay").style.display = "none", 5000);
+            }
+
+            const res = document.getElementById("resultText");
+            if(win > 0) {
+                res.innerText = `THẮNG: +${formatMoney(win)}`; res.style.color = "#0f0";
+                db.ref('users/'+userData.uid+'/money').once('value', s => db.ref('users/'+userData.uid).update({ money: s.val() + win }));
+            } else { res.innerText = `KẾT QUẢ: ${side.toUpperCase()}`; res.style.color = "#f00"; }
+            setTimeout(() => { isPlaying = false; bets = {}; updateBetUI(); }, 2000);
+        }, 500);
+    }, 1500);
+}
+
+function confirmExit() { if(confirm("​Vận may đã mỉm cười đủ rồi, tạm nghỉ chứ? ")) window.location.href='index.html'; }
+
+document.querySelectorAll(".chip").forEach(c => {
+    c.onclick = function() {
+        if(!isPlaying) {
+            document.querySelectorAll(".chip").forEach(chip => chip.classList.remove("active"));
+            this.classList.add("active"); selectedAmount = parseInt(this.dataset.value);
+        }
+    };
+});
+</script>
+</body>
+</html>
