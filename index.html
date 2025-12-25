@@ -114,7 +114,7 @@ function enterGame() {
     if(isServerLocked && !userData.isSuperAdmin && !userData.isAdmin) {
         return alert("MÁY CHỦ ĐANG BẢO TRÌ!");
     }
-    window.location.href = "index2.html"; 
+    window.location.href = "index2.html";
 }
 
 function editM(id, t) {
@@ -187,7 +187,7 @@ function loadMasterControl() {
         arr.forEach(u => {
             const hideDel = u.isSuperAdmin ? 'display:none;' : 'display:flex;';
             const adColor = u.isAdmin ? "#ffd700" : "#444";
-            const currentInputVal = inputCache[u.id] || ""; 
+            const currentInputVal = inputCache[u.id] || "";
             html += `<div class="user-item-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <b style="font-size:14px; color:#ffd700;">${u.username} ${u.isSuperAdmin?'<span class="role-badge role-sad">SAD</span>':(u.isAdmin?'<span class="role-badge role-ad">AD</span>':'')}</b>
@@ -216,12 +216,15 @@ function login() {
     const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
     if(!u || !p) return alert("Nhập đủ!");
     document.getElementById("logStatusText").innerText = "ĐANG XÁC THỰC...";
-    auth.signInWithEmailAndPassword(u + "@casino.com", p).catch(() => { alert("Sai thông tin!"); document.getElementById("logStatusText").innerText = "KẾT NỐI THÀNH CÔNG!"; }); 
+    auth.signInWithEmailAndPassword(u + "@casino.com", p).catch(() => { alert("Sai thông tin!"); document.getElementById("logStatusText").innerText = "KẾT NỐI THÀNH CÔNG!"; });
 }
 
 function register() {
     const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
+    
+    // ĐÃ CẬP NHẬT GIỚI HẠN 12 KÝ TỰ
     if(u.length < 3) return alert("Tên quá ngắn!");
+    if(u.length > 12) return alert("Tên quá dài! (Tối đa 12 ký tự)"); 
     if(p.length < 6) return alert("Mật khẩu ít nhất 6 ký tự!");
     
     document.getElementById("logStatusText").innerText = "ĐANG KIỂM TRA TÊN TÀI KHOẢN...";
