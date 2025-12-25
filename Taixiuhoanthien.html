@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Royal Casino - V156 Master Imperial</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <style>
+        /* FULL CSS LUXURY - GIỮ NGUYÊN 100% */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; user-select: none; }
+        body { background: radial-gradient(circle at 50% 50%, #4a0000 0%, #1a0000 70%, #000 100%); color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        #syncLoading { height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #000; position: fixed; inset: 0; z-index: 10000; }
+        .spinner { width: 45px; height: 45px; border: 4px solid #ffd70033; border-top: 4px solid #ffd700; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #gamePanel { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; display: none; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255,255,255,0.07); padding: 12px 18px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); backdrop-filter: blur(10px); }
+        .btn-exit { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        #money { font-size: 45px; color: #00ff41; font-weight: 900; text-align: center; text-shadow: 0 0 25px rgba(0,255,65,0.5); margin: 5px 0 25px 0; }
+        #localLockBanner { background: linear-gradient(90deg, #ff0000, #b71c1c); color: #fff; padding: 12px; text-align: center; font-weight: 900; border-radius: 15px; margin-bottom: 15px; border: 2px solid #fff; display: none; animation: blink 1s infinite alternate; }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.6; } }
+        .dice-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .dice { width: 70px; height: 70px; background: #fff; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #000; font-weight: bold; border: 3px solid #ffd700; box-shadow: 0 8px 20px #000; }
+        #chipArea { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .chip { width: 52px; height: 52px; border-radius: 50%; border: 2.5px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 8px #000; margin: 0 auto; color:#fff; }
+        .chip.selected { border-color: #ffd700; transform: scale(1.15) translateY(-5px); box-shadow: 0 0 15px #ffd700; filter: brightness(1.2); }
+        .chip.disabled { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
+        .btn-bet { flex: 1; padding: 20px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.1); font-weight: 900; font-size: 24px; color: #fff; cursor: pointer; }
+        .btn-tai { background: linear-gradient(#ff6f00, #e65100); }
+        .btn-xiu { background: linear-gradient(#0288d1, #01579b); }
+        .active-bet { border-color: #fff; box-shadow: 0 0 20px #fff; transform: translateY(3px); }
+        .btn-roll { width: 100%; padding: 22px; background: linear-gradient(#ffd700, #b8860b); color: #000; font-weight: 900; font-size: 22px; border-radius: 20px; border: none; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; }
+        #resultText { text-align:center; font-weight:900; color:#ffd700; margin-bottom:20px; font-size: 18px; height: 30px; text-transform: uppercase; }
+        .win-text { color: #00ff41 !important; text-shadow: 0 0 15px #00ff41; }
+        .lose-text { color: #ff4d4d !important; text-shadow: 0 0 15px #ff4d4d; }
+
+        /* ADMIN PANEL */
+        #adminPanel { margin-top: 40px; padding: 25px; background: rgba(0,0,0,0.95); border: 2px solid #ff0000; border-radius: 35px; display: none; box-shadow: 0 0 40px rgba(255,0,0,0.5); }
+        .admin-section { background: rgba(255,255,255,0.04); border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08); }
+        .admin-label { color: #ffd700; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: block; border-left: 3px solid #f00; padding-left: 10px; }
+        .admin-status-info { font-size: 12px; font-weight: 900; margin-bottom: 15px; text-align: center; color: #ffd700; background: #000; padding: 10px; border-radius: 12px; border: 1px solid #333; }
+        .u-badge { font-size: 9px; padding: 2px 6px; border-radius: 5px; font-weight: 900; margin-left: 5px; text-transform: uppercase; }
+        .badge-sad { background: #ff0000; color: #fff; }
+        .badge-ad { background: #ffd700; color: #000; }
+        .user-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 15px; margin-bottom: 8px; border-left: 5px solid #ffd700; }
+        .btn-adm { flex: 1; padding: 12px; border-radius: 10px; border: none; color: #fff; font-weight: 900; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+        .u-input-short { width: 70px; background: #000; border: 1px solid #333; color: #0f0; border-radius: 8px; padding: 8px; font-weight: bold; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="syncLoading"><div class="spinner"></div><p style="color:#ffd700; margin-top:15px; font-weight:bold;">ĐANG ĐỒNG BỘ ROYAL MASTER V156...</p></div>
+
+<div id="gamePanel">
+    <div class="header-bar">
+        <button onclick="confirmExit()" class="btn-exit">← VỀ SẢNH</button>
+        <div id="displayUser" style="color:#ffd700; font-size:12px; font-weight:900;">👤 --</div>
+    </div>
+
+    <div id="localLockBanner">⚠️ TRÒ CHƠI ĐANG BẢO TRÌ GAME ⚠️</div>
+    <div id="money">0 $</div>
+
+    <div class="dice-container">
+        <div id="dice1" class="dice">?</div><div id="dice2" class="dice">?</div><div id="dice3" class="dice">?</div>
+    </div>
+
+    <div id="resultText">HÃY ĐẶT CƯỢC...</div>
+
+    <div id="chipArea">
+        <div class="chip selected" data-value="1000" style="background:#1b5e20;">1K</div>
+        <div class="chip" data-value="10000" style="background:#2e7d32;">10K</div>
+        <div class="chip" data-value="50000" style="background:#43a047;">50K</div>
+        <div class="chip" data-value="100000" style="background:#fb8c00;">100K</div>
+        <div class="chip" data-value="500000" style="background:#e65100;">500K</div>
+        <div class="chip" data-value="1000000" style="background:#0288d1;">1M</div>
+        <div class="chip" data-value="5000000" style="background:#01579b;">5M</div>
+        <div class="chip" data-value="10000000" style="background:#8e24aa;">10M</div>
+        <div class="chip" data-value="50000000" style="background:#6a1b9a;">50M</div>
+        <div class="chip" data-value="100000000" style="background:#c2185b;">100M</div>
+        <div class="chip" data-value="500000000" style="background:#880e4f;">500M</div>
+        <div class="chip" data-value="1000000000" style="background:linear-gradient(#ffd700,#b8860b); color:#000;">1T</div>
+        <div class="chip" data-value="5000000000" style="background:linear-gradient(#00e676,#00c853); color:#000;">5T</div>
+        <div class="chip" data-value="10000000000" style="background:linear-gradient(#00b0ff,#0091ea); color:#000;">10T</div>
+        <div class="chip" data-value="50000000000" style="background:linear-gradient(#d500f9,#aa00ff); color:#fff;">50T</div>
+        <div class="chip" data-value="100000000000" style="background:linear-gradient(#ff1744,#d50000); color:#fff;">100T</div>
+    </div>
+
+    <div style="display:flex; gap:12px; margin-bottom:15px;">
+        <button id="betTai" onclick="chooseBet('Tài')" class="btn-bet btn-tai">TÀI</button>
+        <button id="betXiu" onclick="chooseBet('Xỉu')" class="btn-bet btn-xiu">XỈU</button>
+    </div>
+
+    <button id="btnRoll" onclick="rollDice()" class="btn-roll">QUAY THƯỞNG</button>
+    <div id="historyList" style="display:flex; justify-content:center; gap:6px; margin-top:20px; flex-wrap:wrap;"></div>
+
+    <div id="adminPanel">
+        <h2 style="color:#ff0000; text-align:center; font-size: 20px; margin-bottom: 25px; font-weight: 900; letter-spacing: 2px;">IMPERIAL MASTER</h2>
+        <div class="admin-section">
+            <span class="admin-label">Cấu hình Tỉ lệ & Máy chủ</span>
+            <div id="adminStatusHeader" class="admin-status-info">
+                TỈ LỆ: <span id="wrDisp" style="color:#0f0">--</span>% | 
+                <span id="lockStatusText" style="color:#0f0">SÒNG ĐANG MỞ</span>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <button onclick="setLocalLock(true)" class="btn-adm" style="background:#b71c1c;">KHÓA SÒNG</button>
+                <button onclick="setLocalLock(false)" class="btn-adm" style="background:#2e7d32;">MỞ CƯỢC</button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <input type="number" id="inpWR" class="u-input-short" placeholder="%">
+                <button onclick="saveWR()" class="btn-adm" style="background:#ffd700; color:#000;">LƯU TỈ LỆ</button>
+            </div>
+        </div>
+        <div id="cardSAD" style="display:none;">
+            <div class="admin-section">
+                <span class="admin-label">Điều khiển kết quả (SAD)</span>
+                <div id="forceStatusDisp" class="admin-status-info" style="color:#ffd700; margin-bottom:15px;">CHẾ ĐỘ: TỰ NHIÊN</div>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="setForce('Tài')" class="btn-adm" style="background:#e65100;">TÀI</button>
+                    <button onclick="setForce('Xỉu')" class="btn-adm" style="background:#0d47a1;">XỈU</button>
+                    <button onclick="setForce(null)" class="btn-adm" style="background:#444;">HỦY ÉP</button>
+                </div>
+            </div>
+            <div class="admin-section">
+                <span class="admin-label">Quản lý Hội viên (+-1M)</span>
+                <div id="adminUserList" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Firebase Config
+const firebaseConfig = { apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", authDomain: "tx888-85658.firebaseapp.com", databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", projectId: "tx888-85658", storageBucket: "tx888-85658.firebasestorage.app", messagingSenderId: "246211516842", appId: "1:246211516842:web:24a3598d54b037676c73d3" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database(), auth = firebase.auth();
+let userData = null, selectedAmount = 1000, selectedChoice = null, isRolling = false, gameSettings = { isLocked: false };
+
+function formatMoney(n) {
+    if (n < 1000) return n + " $";
+    if (n < 1000000) return (n / 1000).toFixed(0) + "k";
+    if (n < 1000000000) return (n / 1000000).toFixed(1) + "M";
+    return (n / 1000000000).toFixed(1) + "B";
+}
+
+// XÁC NHẬN KHI THOÁT
+function confirmExit() {
+    if(confirm("Bạn có chắc chắn muốn rời sòng để về sảnh không?")) {
+        window.location.href = 'Sanh.html';
+    }
+}
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        db.ref('users/' + user.uid).on('value', s => {
+            userData = s.val(); if(!userData) return;
+            userData.uid = user.uid;
+            document.getElementById("syncLoading").style.display = "none";
+            document.getElementById("gamePanel").style.display = "block";
+            document.getElementById("displayUser").innerText = "👤 " + userData.username.toUpperCase();
+            document.getElementById("money").innerText = formatMoney(userData.money);
+            if(userData.isAdmin || userData.isSuperAdmin) {
+                document.getElementById("adminPanel").style.display = "block";
+                if(userData.isSuperAdmin) {
+                    document.getElementById("cardSAD").style.display = "block";
+                    db.ref('users').once('value', loadUserList); 
+                }
+            }
+            updateChips();
+        });
+    } else { window.location.href = "Sanh.html"; }
+});
+
+db.ref('game_taixiu_settings').on('value', s => {
+    gameSettings = s.val() || { isLocked: false, winRate: 20 };
+    document.getElementById("localLockBanner").style.display = gameSettings.isLocked ? "block" : "none";
+    const lockTxt = document.getElementById("lockStatusText");
+    if(lockTxt) {
+        lockTxt.innerText = gameSettings.isLocked ? "SÒNG ĐANG KHÓA" : "SÒNG ĐANG MỞ";
+        lockTxt.style.color = gameSettings.isLocked ? "#f00" : "#0f0";
+    }
+    document.getElementById("wrDisp").innerText = gameSettings.winRate || 20;
+    const fStatus = document.getElementById("forceStatusDisp");
+    if(fStatus) fStatus.innerText = gameSettings.forcedResult ? "ĐANG ÉP: " + gameSettings.forcedResult.toUpperCase() : "CHẾ ĐỘ: TỰ NHIÊN";
+    if(gameSettings.isLocked && userData && !userData.isAdmin && !userData.isSuperAdmin) window.location.href = "Sanh.html";
+});
+
+function setLocalLock(s) { db.ref('game_taixiu_settings').update({ isLocked: s }); }
+function setForce(f) { db.ref('game_taixiu_settings').update({ forcedResult: f }); }
+function saveWR() {
+    const val = parseInt(document.getElementById("inpWR").value);
+    if(val >= 0 && val <= 100) {
+        if(!userData.isSuperAdmin && val > 60) return alert("Admin tối đa 60%!");
+        db.ref('game_taixiu_settings').update({ winRate: val }).then(()=>alert("Đã lưu!"));
+    }
+}
+
+function loadUserList(snapshot) {
+    let html = ""; const data = snapshot.val();
+    let arr = Object.keys(data).map(id => ({ id, ...data[id] })).sort((a,b) => b.money - a.money);
+    arr.forEach(u => {
+        let bClass = u.isSuperAdmin ? "badge-sad" : (u.isAdmin ? "badge-ad" : "badge-mem");
+        html += `<div class="user-row">
+            <div style="flex:1"><span class="u-name">${u.username}</span> <span class="u-badge ${bClass}">${u.isSuperAdmin?'SAD':(u.isAdmin?'AD':'MEM')}</span><br><span id="m-${u.id}" class="u-money" style="color:#0f0">${formatMoney(u.money)}</span></div>
+            <div style="display:flex; gap:5px;">
+                <button onclick="editMAdmin('${u.id}',1)" style="background:green; color:#fff; border:none; width:35px; height:35px; border-radius:8px; font-weight:bold;">+1M</button>
+                <button onclick="editMAdmin('${u.id}',-1)" style="background:red; color:#fff; border:none; width:35px; height:35px; border-radius:8px; font-weight:bold;">-1M</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById("adminUserList").innerHTML = html;
+}
+
+function editMAdmin(id, t) {
+    db.ref('users/'+id+'/money').once('value', s => {
+        db.ref('users/'+id).update({ money: Math.max(0, s.val() + (t*1000000)) });
+    });
+}
+
+function chooseBet(c) {
+    if(isRolling) return;
+    selectedChoice = c;
+    document.querySelectorAll(".btn-bet").forEach(b => b.classList.remove("active-bet"));
+    document.getElementById(c == 'Tài' ? "betTai" : "betXiu").classList.add("active-bet");
+    document.getElementById("resultText").innerText = `CƯỢC ${formatMoney(selectedAmount)} VÀO ${c.toUpperCase()}`;
+    document.getElementById("resultText").className = "";
+}
+
+function rollDice() {
+    if(isRolling || !selectedChoice || userData.money < selectedAmount) return alert("HÃY ĐẶT CƯỢC!");
+    isRolling = true;
+    const rollBtn = document.getElementById("btnRoll");
+    const resTxt = document.getElementById("resultText");
+    rollBtn.disabled = true; rollBtn.innerText = "ĐANG QUAY...";
+    resTxt.innerText = "ĐANG QUAY...";
+    resTxt.className = "";
+
+    const betVal = selectedAmount;
+    db.ref('users/' + userData.uid).update({ money: userData.money - betVal });
+
+    db.ref('game_taixiu_settings').once('value', s => {
+        const set = s.val() || { winRate: 20 };
+        let d, sum, res, limit = 0;
+        do {
+            d = [Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1];
+            sum = d[0]+d[1]+d[2]; res = sum >= 11 ? "Tài" : "Xỉu"; limit++;
+            let cond = set.forcedResult ? (res === set.forcedResult) : (Math.random() < (set.winRate/100) ? res === selectedChoice : res !== selectedChoice);
+            if(cond || limit > 50) break;
+        } while(true);
+
+        let count = 0;
+        let t = setInterval(() => {
+            document.getElementById("dice1").innerText = Math.floor(Math.random()*6)+1;
+            document.getElementById("dice2").innerText = Math.floor(Math.random()*6)+1;
+            document.getElementById("dice3").innerText = Math.floor(Math.random()*6)+1;
+            if(count++ > 15) {
+                clearInterval(t);
+                document.getElementById("dice1").innerText = d[0]; document.getElementById("dice2").innerText = d[1]; document.getElementById("dice3").innerText = d[2];
+                
+                const win = (selectedChoice === res);
+                if(win) {
+                    resTxt.innerText = `THẮNG: ${res.toUpperCase()} (${sum})`;
+                    resTxt.className = "win-text";
+                    db.ref('users/'+userData.uid+'/money').once('value', sv => {
+                        db.ref('users/'+userData.uid).update({ money: sv.val() + (betVal * 2) });
+                    });
+                } else {
+                    resTxt.innerText = `THUA: ${res.toUpperCase()} (${sum})`;
+                    resTxt.className = "lose-text";
+                }
+                
+                db.ref('history').push({ res: res });
+                isRolling = false; rollBtn.disabled = false; rollBtn.innerText = "QUAY THƯỞNG";
+                selectedChoice = null;
+                document.querySelectorAll(".btn-bet").forEach(b => b.classList.remove("active-bet"));
+            }
+        }, 60);
+    });
+}
+
+function updateChips() {
+    document.querySelectorAll(".chip").forEach(c => {
+        if(userData.money < parseInt(c.dataset.value)) c.classList.add("disabled");
+        else c.classList.remove("disabled");
+    });
+}
+
+db.ref('history').limitToLast(12).on('value', s => {
+    let h = ""; const d = s.val();
+    if(d) Object.values(d).forEach(i => { 
+        h += `<div style="width:22px;height:22px;border-radius:50%;border:1px solid #fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;background:${i.res=='Tài'?'linear-gradient(#ff5722,#bf360c)':'linear-gradient(#2196f3,#0d47a1)'}">${i.res[0]}</div>`; 
+    });
+    document.getElementById("historyList").innerHTML = h;
+});
+
+document.querySelectorAll(".chip").forEach(chip => {
+    chip.onclick = function() {
+        if(isRolling) return;
+        selectedAmount = parseInt(this.dataset.value);
+        document.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
+        this.classList.add("selected");
+        if(selectedChoice) chooseBet(selectedChoice);
+    };
+});
+</script>
+</body>
+</html>
