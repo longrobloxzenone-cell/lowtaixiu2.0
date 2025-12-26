@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
         /* CSS CHI TIẾT TỐI ĐA - GIỮ NGUYÊN 100% */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); outline: none; margin: 0; padding: 0; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
         html, body { background-color: #000; background-image: radial-gradient(circle at 50% 50%, #4a0000 0%, #2a0000 45%, #000 100%); background-attachment: fixed; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; min-height: 100vh; }
         #loginPanel, #lobbyPanel { width: 100%; max-width: 500px; margin: 0 auto; padding: 25px 20px; }
         .login-card { background-color: rgba(10, 10, 10, 0.98); padding: 55px 35px; border-radius: 50px; border: 2px solid rgba(255, 215, 0, 0.4); text-align: center; box-shadow: 0 40px 100px #000; }
@@ -78,9 +78,16 @@
         <span class="slogan-ultimate">HUYỀN THOẠI ĐẾ CHẾ - UY CHẤN SERVER</span>
     </div>
 
+    <div id="btnXDach" onclick="enterGame('index4.html')" class="btn-play-card">
+        <div class="badge-hot">HOT</div>
+        <div style="font-size:75px; margin-bottom:15px;">🃏</div>
+        <h3 id="btnPlayTitleXDach" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÌ DÁCH IMPERIAL</h3>
+        <span class="slogan-ultimate">TRÍ TUỆ BẬC THẦY - ĐẲNG CẤP QUÂN BÀI</span>
+    </div>
+
     <div class="btn-play-card" style="opacity: 0.6; cursor: default; filter: grayscale(0.5);">
         <div class="badge-soon">COMING SOON</div>
-        <div style="font-size:75px; margin-bottom:15px;">🃏</div>
+        <div style="font-size:75px; margin-bottom:15px;">💎</div>
         <h3 style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">BACCARAT ROYAL</h3>
         <span class="slogan-ultimate">SẮP RA MẮT - ĐÓN CHỜ TRẢI NGHIỆM MỚI</span>
     </div>
@@ -111,12 +118,11 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database(), auth = firebase.auth();
 let userData = null, isServerLocked = false, inputCache = {};
 
-// HỆ THỐNG TIỀN MỚI
 function formatMoney(n) {
-    if (n >= 1000000000000000) return "∞"; // 1000T = vô cực
-    if (n >= 1000000000000) return (n / 1000000000000).toFixed(n % 1000000000000 === 0 ? 0 : 1) + "T"; // 1000B = 1T
-    if (n >= 1000000000) return (n / 1000000000).toFixed(n % 1000000000 === 0 ? 0 : 1) + "B"; // 1000M = 1B
-    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + "M"; // 1000k = 1M
+    if (n >= 1000000000000000) return "∞";
+    if (n >= 1000000000000) return (n / 1000000000000).toFixed(n % 1000000000000 === 0 ? 0 : 1) + "T";
+    if (n >= 1000000000) return (n / 1000000000).toFixed(n % 1000000000 === 0 ? 0 : 1) + "B";
+    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + "M";
     if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
     return n + " $";
 }
@@ -125,7 +131,7 @@ function enterGame(url) {
     if(isServerLocked && !userData.isSuperAdmin && !userData.isAdmin) {
         return alert("MÁY CHỦ ĐANG BẢO TRÌ!");
     }
-    window.location.href = url; // Vào game theo tên file được truyền
+    window.location.href = url;
 }
 
 function editM(id, t) {
@@ -160,19 +166,19 @@ db.ref('server').on('value', s => {
     if(banner) banner.style.display = isServerLocked ? "block" : "none";
     document.getElementById("marqueeText").innerText = data.notice;
     
-    // Cập nhật giao diện khi bảo trì cho tất cả game
+    // Cập nhật giao diện bảo trì cho tất cả game (Đã thêm Xì Dách)
     const btnTX = document.getElementById("btnTX");
     const btnXD = document.getElementById("btnXD");
+    const btnXDach = document.getElementById("btnXDach");
+
     if (isServerLocked) { 
-        btnTX.style.opacity = "0.3"; 
-        btnXD.style.opacity = "0.3"; 
-        document.getElementById("btnPlayTitleTX").innerText = "MÁY CHỦ BẢO TRÌ";
-        document.getElementById("btnPlayTitleXD").innerText = "MÁY CHỦ BẢO TRÌ";
+        if(btnTX) { btnTX.style.opacity = "0.3"; document.getElementById("btnPlayTitleTX").innerText = "MÁY CHỦ BẢO TRÌ"; }
+        if(btnXD) { btnXD.style.opacity = "0.3"; document.getElementById("btnPlayTitleXD").innerText = "MÁY CHỦ BẢO TRÌ"; }
+        if(btnXDach) { btnXDach.style.opacity = "0.3"; document.getElementById("btnPlayTitleXDach").innerText = "MÁY CHỦ BẢO TRÌ"; }
     } else { 
-        btnTX.style.opacity = "1"; 
-        btnXD.style.opacity = "1";
-        document.getElementById("btnPlayTitleTX").innerText = "TÀI XỈU IMPERIAL";
-        document.getElementById("btnPlayTitleXD").innerText = "XÓC ĐĨA IMPERIAL";
+        if(btnTX) { btnTX.style.opacity = "1"; document.getElementById("btnPlayTitleTX").innerText = "TÀI XỈU IMPERIAL"; }
+        if(btnXD) { btnXD.style.opacity = "1"; document.getElementById("btnPlayTitleXD").innerText = "XÓC ĐĨA IMPERIAL"; }
+        if(btnXDach) { btnXDach.style.opacity = "1"; document.getElementById("btnPlayTitleXDach").innerText = "XÌ DÁCH IMPERIAL"; }
     }
     updateSrvButtons(isServerLocked);
 });
