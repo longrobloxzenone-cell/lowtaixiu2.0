@@ -3,38 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Royal Casino - V131 Lobby</title>
+    <title>Royal Casino - V149 Master Lobby</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
-        /* CSS CHI TIẾT TỐI ĐA - GIỮ NGUYÊN 100% */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+        /* CSS CHI TIẾT TỐI ĐA - GIỮ NGUYÊN 100% TỪ V131 */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); outline: none; margin: 0; padding: 0; }
         html, body { background-color: #000; background-image: radial-gradient(circle at 50% 50%, #4a0000 0%, #2a0000 45%, #000 100%); background-attachment: fixed; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; min-height: 100vh; }
         #loginPanel, #lobbyPanel { width: 100%; max-width: 500px; margin: 0 auto; padding: 25px 20px; }
         .login-card { background-color: rgba(10, 10, 10, 0.98); padding: 55px 35px; border-radius: 50px; border: 2px solid rgba(255, 215, 0, 0.4); text-align: center; box-shadow: 0 40px 100px #000; }
-        #logStatusText { color: #ffd700; font-size: 10px; margin-bottom: 30px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; animation: blink-log 2s infinite; }
+        
+        #logStatusText { color: #ffd700; font-size: 10px; margin-bottom: 30px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; animation: blink-log 2s infinite; min-height: 20px; display: flex; align-items: center; justify-content: center; }
         @keyframes blink-log { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
         .sad-input { width: 100%; padding: 20px; background-color: #050505; border: 1px solid #333; color: #fff; border-radius: 20px; margin-bottom: 15px; font-size: 16px; }
         .btn-main { width: 100%; padding: 24px; background-image: linear-gradient(135deg, #ffd700 0%, #b8860b 100%); color: #000; font-weight: 900; font-size: 20px; border-radius: 20px; border: none; cursor: pointer; text-transform: uppercase; }
+        
         .marquee-box { width: 100%; background: rgba(255, 215, 0, 0.08); border: 1px solid rgba(255, 215, 0, 0.25); border-radius: 20px; padding: 14px 0; margin-bottom: 25px; overflow: hidden; }
         .marquee-text { display: inline-block; white-space: nowrap; color: #ffd700; font-size: 15px; font-weight: 900; animation: marquee-run 16s linear infinite; }
         @keyframes marquee-run { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
         #lockBanner { background: linear-gradient(to right, #b71c1c, #ff0000); color: #fff; padding: 18px; text-align: center; font-weight: 900; border-radius: 25px; border: 2px solid #fff; margin-bottom: 25px; display: none; box-shadow: 0 0 30px rgba(255,0,0,0.6); }
-        .btn-play-card { position: relative; padding: 45px 10px; border-radius: 45px; border: 2px solid rgba(255, 215, 0, 0.35); cursor: pointer; margin-bottom: 25px; text-align: center; background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent); overflow: hidden; }
+        
+        #gameListContainer { display: flex; flex-direction: column; }
+        .btn-play-card { position: relative; padding: 45px 10px; border-radius: 45px; border: 2px solid rgba(255, 215, 0, 0.35); cursor: pointer; margin-bottom: 25px; text-align: center; background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent); overflow: hidden; transition: 0.3s; order: 3; }
+        
+        .btn-play-card h3 { white-space: nowrap; transition: 0.2s; }
+        .maint-mode h3 { font-size: 13.5px !important; }
+        .maint-mode { filter: grayscale(1) brightness(0.6) !important; opacity: 0.5 !important; }
+
         .badge-hot { position: absolute; top: 15px; right: 15px; background: #ff0000; color: #fff; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 10px; animation: pulse-hot 1s infinite; }
         .badge-new { position: absolute; top: 15px; right: 15px; background: #4caf50; color: #fff; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 10px; animation: pulse-hot 1s infinite; }
         .badge-soon { position: absolute; top: 15px; right: 15px; background: #555; color: #fff; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 10px; }
         @keyframes pulse-hot { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
         .slogan-ultimate { color: #999; font-size: 3.2vw; max-font-size: 13px; margin-top: 15px; font-style: italic; font-weight: 800; white-space: nowrap; display: block; width: 100%; text-transform: uppercase; }
-        .sad-dashboard { background: rgba(0, 0, 0, 0.99); border: 2px solid #ff0000; border-radius: 50px; padding: 30px 15px; margin-top: 40px; margin-bottom: 100px; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
+        
+        .sad-dashboard { background: rgba(0, 0, 0, 0.99); border: 2px solid #ff0000; border-radius: 50px; padding: 30px 15px; margin-top: 40px; margin-bottom: 100px; box-shadow: 0 0 50px rgba(255,0,0,0.5); display: none; }
         .user-item-card { background: rgba(255, 255, 255, 0.02); padding: 18px; border-radius: 25px; margin-bottom: 15px; border: 1px solid #222; }
         .control-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
-        .btn-mini { height: 42px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+        .btn-mini { height: 42px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; text-transform: uppercase; }
         .role-badge { font-size: 9px; padding: 4px 10px; border-radius: 6px; font-weight: 900; text-transform: uppercase; margin-left: 10px; display: inline-block; }
         .role-sad { background: #f00; color: #fff; border: 1px solid #fff; }
         .role-ad { background: #ffd700; color: #000; }
         .role-mem { background: #2196f3; color: #fff; }
+        .admin-tag-stt { font-size: 11px; color: #ffd700; display: block; margin-bottom: 8px; font-weight: 900; text-transform: uppercase; }
+        .btn-tag-cmd { flex: 1; height: 35px; border-radius: 8px; border: none; font-size: 9px; font-weight: 900; color: #fff; cursor: pointer; }
+
+        /* --- HIỆU ỨNG HÀO QUANG TU TIÊN --- */
+        @keyframes glowVoCuc { 0% { background-position: 0% 50%; box-shadow: 0 0 10px #ff0000; } 50% { background-position: 100% 50%; box-shadow: 0 0 30px #00ff00; } 100% { background-position: 0% 50%; box-shadow: 0 0 10px #ff0000; } }
+        @keyframes glowRed { 0%, 100% { box-shadow: inset 0 0 5px #ff3d00, 0 0 5px #ff3d00; } 50% { box-shadow: inset 0 0 15px #ff3d00, 0 0 15px #ff3d00; } }
+        @keyframes glowPurple { 0%, 100% { box-shadow: inset 0 0 5px #d500f9, 0 0 5px #d500f9; } 50% { box-shadow: inset 0 0 15px #d500f9, 0 0 15px #d500f9; } }
+        @keyframes glowYellow { 0%, 100% { box-shadow: inset 0 0 5px #ffea00, 0 0 5px #ffea00; } 50% { box-shadow: inset 0 0 15px #ffea00, 0 0 15px #ffea00; } }
+        @keyframes glowGreen { 0%, 100% { box-shadow: inset 0 0 5px #00e676, 0 0 5px #00e676; } 50% { box-shadow: inset 0 0 15px #00e676, 0 0 15px #00e676; } }
+        @keyframes glowBlue { 0%, 100% { box-shadow: inset 0 0 5px #00e5ff, 0 0 5px #00e5ff; } 50% { box-shadow: inset 0 0 15px #00e5ff, 0 0 15px #00e5ff; } }
+
+        .rank-vocuc-item { background: linear-gradient(-45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8); background-size: 400% 400%; animation: glowVoCuc 3s ease infinite; border: 2px solid #fff !important; transform: scale(1.03); z-index: 10; }
+        .rank-vocuc-item * { color: #fff !important; text-shadow: 2px 2px 4px #000; font-weight: 900 !important; }
+        
+        .rank-do-kiep { animation: glowRed 2s infinite; border: 1px solid #ff3d00 !important; }
+        .rank-hop-the { animation: glowPurple 2s infinite; border: 1px solid #d500f9 !important; }
+        .rank-luyen-hu { animation: glowYellow 2s infinite; border: 1px solid #ffea00 !important; }
+        .rank-hoa-than { animation: glowGreen 3s infinite; border: 1px solid #00e676 !important; }
+        .rank-nguyen-anh { animation: glowBlue 3s infinite; border: 1px solid #00e5ff !important; }
+
+        .tu-vi-tag { font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 5px; margin-top: 5px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -59,52 +93,83 @@
     <div style="padding:40px 20px; border-radius:50px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,215,0,0.3); margin-bottom:35px; text-align:center;">
         <div id="myRankDisplay" class="role-badge">MEMBER</div>
         <h2 id="lobbyName" style="color:#ffd700; margin-top:10px; margin-bottom:15px; font-size:30px; font-weight:900;">--</h2>
-        <div style="color:#888; font-size:12px; font-weight:900; letter-spacing:2px; margin-bottom:5px; text-transform:uppercase;">SỐ DƯ TÀI KHOẢN</div>
-        <div id="lobbyMoney" style="font-size:38px; color:#4caf50; font-weight:900; margin-bottom:30px;">0 $</div>
+        <div id="lobbyMoney" style="font-size:38px; color:#4caf50; font-weight:900; margin-bottom:30px;">Số dư: 0 $</div>
         <button onclick="logout()" style="background:rgba(204,0,0,0.15); color:#ff5252; border:1px solid #ff5252; padding:15px 40px; border-radius:22px; font-weight:bold; cursor:pointer;">ĐĂNG XUẤT</button>
     </div>
 
-    <div id="btnTX" onclick="enterGame('index2.html')" class="btn-play-card">
-        <div class="badge-hot">HOT</div>
-        <div style="font-size:75px; margin-bottom:15px;">🎲</div>
-        <h3 id="btnPlayTitleTX" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">TÀI XỈU IMPERIAL</h3>
-        <span class="slogan-ultimate">NƠI ANH HÙNG HỘI TỤ - BẢN LĨNH ĐỊNH GIANG SƠN</span>
-    </div>
-
-    <div id="btnXDach" onclick="enterGame('index4.html')" class="btn-play-card">
-        <div class="badge-hot">HOT</div>
-        <div style="font-size:75px; margin-bottom:15px;">🃏</div>
-        <h3 id="btnPlayTitleXDach" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÌ DÁCH IMPERIAL</h3>
-        <span class="slogan-ultimate">TRÍ TUỆ BẬC THẦY - ĐẲNG CẤP QUÂN BÀI</span>
-    </div>
-
-    <div id="btnXD" onclick="enterGame('index3.html')" class="btn-play-card">
-        <div class="badge-new">NEW</div>
-        <div style="font-size:75px; margin-bottom:15px;">⚪🔴</div>
-        <h3 id="btnPlayTitleXD" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÓC ĐĨA IMPERIAL</h3>
-        <span class="slogan-ultimate">HUYỀN THOẠI ĐẾ CHẾ - UY CHẤN SERVER</span>
-    </div>
-
-
-    <div class="btn-play-card" style="opacity: 0.6; cursor: default; filter: grayscale(0.5);">
-        <div class="badge-soon">COMING SOON</div>
-        <div style="font-size:75px; margin-bottom:15px;">💎</div>
-        <h3 style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">BACCARAT ROYAL</h3>
-        <span class="slogan-ultimate">SẮP RA MẮT - ĐÓN CHỜ TRẢI NGHIỆM MỚI</span>
-    </div>
-
-    <div style="background: rgba(10, 10, 10, 0.99); border: 1px solid rgba(255, 215, 0, 0.35); border-radius: 45px; padding: 35px 25px; margin-bottom: 40px;">
-        <h3 style="color:#ffd700; text-align:center; margin-top:0; font-size:18px; border-bottom:1px solid #333; padding-bottom:22px; text-transform:uppercase;">🏆 Top 10 Đại Gia</h3>
+    <div style="background: rgba(10, 10, 10, 0.99); border: 2px solid #ffd700; border-radius: 45px; padding: 35px 20px; margin-bottom: 40px; box-shadow: 0 0 30px rgba(255,215,0,0.1);">
+        <h3 style="color:#ffd700; text-align:center; margin-top:0; font-size:18px; border-bottom:1px solid #333; padding-bottom:22px; text-transform:uppercase; letter-spacing:3px;">🏆 Tiên Bảng Chí Tôn 🏆</h3>
         <div id="top10List"></div>
     </div>
 
-    <div id="sadDashboard" class="sad-dashboard" style="display:none;">
+    <div id="gameListContainer">
+        <div id="btnTX" onclick="enterGame('index2.html', 'tx')" class="btn-play-card">
+            <div id="badge_tx" class="badge-hot">HOT</div>
+            <div style="font-size:75px; margin-bottom:15px;">🎲</div>
+            <h3 id="title_tx" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">TÀI XỈU IMPERIAL</h3>
+            <span id="slogan_tx" class="slogan-ultimate">NƠI ANH HÙNG HỘI TỤ - BẢN LĨNH ĐỊNH GIANG SƠN</span>
+        </div>
+        <div id="btnXDach" onclick="enterGame('index4.html', 'xdach')" class="btn-play-card">
+            <div id="badge_xdach" class="badge-hot">HOT</div>
+            <div style="font-size:75px; margin-bottom:15px;">🃏</div>
+            <h3 id="title_xdach" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÌ DÁCH IMPERIAL</h3>
+            <span id="slogan_xdach" class="slogan-ultimate">TRÍ TUỆ BẬC THẦY - ĐẲNG CẤP QUÂN BÀI</span>
+        </div>
+        <div id="btnXD" onclick="enterGame('index3.html', 'xd')" class="btn-play-card">
+            <div id="badge_xd" class="badge-new">NEW</div>
+            <div style="font-size:75px; margin-bottom:15px;">⚪🔴</div>
+            <h3 id="title_xd" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÓC ĐĨA IMPERIAL</h3>
+            <span id="slogan_xd" class="slogan-ultimate">HUYỀN THOẠI ĐẾ CHẾ - UY CHẤN SERVER</span>
+        </div>
+        <div id="btnSoon" class="btn-play-card" style="opacity: 0.6; cursor: default; filter: grayscale(1); order: 99;">
+            <div class="badge-soon">COMING SOON</div>
+            <div style="font-size:75px; margin-bottom:15px;">💎</div>
+            <h3 style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">BACCARAT ROYAL</h3>
+            <span class="slogan-ultimate">SẮP RA MẮT - ĐÓN CHỜ TRẢI NGHIỆM MỚI</span>
+        </div>
+    </div>
+
+    <div id="sadDashboard" class="sad-dashboard">
         <div style="color:#f00; font-weight:900; text-align:center; margin-bottom:35px; font-size:22px; text-transform:uppercase;">Master Control Center</div>
+        
+        <div style="background: rgba(255,255,255,0.03); padding: 25px 20px; border-radius: 35px; border: 1px solid #333; margin-bottom: 25px;">
+            <div style="text-align:center; color:#ffd700; font-size:12px; font-weight:bold; margin-bottom:20px; text-transform:uppercase;">QUẢN LÝ GAME (SAD)</div>
+            <div id="admin_game_ctrl_area">
+                <div id="ctrl_row_tx" style="margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;">
+                    <span id="stt_tx_admin" class="admin-tag-stt">TÀI XỈU: [---]</span>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="setTag('tx','hot')" class="btn-tag-cmd" style="background:#f00;">HOT</button>
+                        <button onclick="setTag('tx','new')" class="btn-tag-cmd" style="background:#4caf50;">NEW</button>
+                        <button onclick="setTag('tx','none')" class="btn-tag-cmd" style="background:#555;">NORMAL</button>
+                        <button id="btn_maint_tx" onclick="toggleMaint('tx')" class="btn-tag-cmd" style="background:#b71c1c; flex:1.5;">BẢO TRÌ</button>
+                    </div>
+                </div>
+                <div id="ctrl_row_xdach" style="margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;">
+                    <span id="stt_xdach_admin" class="admin-tag-stt">XÌ DÁCH: [---]</span>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="setTag('xdach','hot')" class="btn-tag-cmd" style="background:#f00;">HOT</button>
+                        <button onclick="setTag('xdach','new')" class="btn-tag-cmd" style="background:#4caf50;">NEW</button>
+                        <button onclick="setTag('xdach','none')" class="btn-tag-cmd" style="background:#555;">NORMAL</button>
+                        <button id="btn_maint_xdach" onclick="toggleMaint('xdach')" class="btn-tag-cmd" style="background:#b71c1c; flex:1.5;">BẢO TRÌ</button>
+                    </div>
+                </div>
+                <div id="ctrl_row_xd" style="margin-bottom:10px;">
+                    <span id="stt_xd_admin" class="admin-tag-stt">XÓC ĐĨA: [---]</span>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="setTag('xd','hot')" class="btn-tag-cmd" style="background:#f00;">HOT</button>
+                        <button onclick="setTag('xd','new')" class="btn-tag-cmd" style="background:#4caf50;">NEW</button>
+                        <button onclick="setTag('xd','none')" class="btn-tag-cmd" style="background:#555;">NORMAL</button>
+                        <button id="btn_maint_xd" onclick="toggleMaint('xd')" class="btn-tag-cmd" style="background:#b71c1c; flex:1.5;">BẢO TRÌ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div style="background: rgba(255,255,255,0.03); padding: 30px 20px; border-radius: 35px; border: 1px solid #333; margin-bottom: 35px;">
-            <div id="srvStatusDisp" style="text-align:center; font-size:12px; font-weight:900; padding:12px; border-radius:15px; margin-bottom:20px; text-transform:uppercase;">TRẠNG THÁI: --</div>
+            <div id="srvStatusDisp" style="text-align:center; font-size:12px; font-weight:900; padding:12px; border-radius:15px; margin-bottom:20px; text-transform:uppercase;">TRẠNG THÁI SERVER: --</div>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <button id="btnLock" onclick="srvLock(true)" class="btn-mini" style="flex:1; height:50px; background:#b71c1c;">KHÓA MÁY</button>
-                <button id="btnUnlock" onclick="srvLock(false)" class="btn-mini" style="flex:1; height:50px; background:#2e7d32;">MỞ MÁY</button>
+                <button id="btnLockTotal" onclick="srvLock(true)" class="btn-mini" style="flex:1; height:50px; background:#b71c1c;">KHÓA MÁY</button>
+                <button id="btnUnlockTotal" onclick="srvLock(false)" class="btn-mini" style="flex:1; height:50px; background:#2e7d32;">MỞ MÁY</button>
             </div>
             <input type="text" id="newNotice" class="sad-input" style="font-size:14px;" placeholder="Thông báo mới...">
             <button onclick="updateNotice()" style="width:100%; background:#1565c0; color:#fff; border:none; padding:20px; border-radius:20px; font-weight:bold;">CẬP NHẬT TOÀN SERVER</button>
@@ -120,176 +185,158 @@ const db = firebase.database(), auth = firebase.auth();
 let userData = null, isServerLocked = false, inputCache = {};
 
 function formatMoney(n) {
-    if (n >= 1000000000000000) return "∞";
-    if (n >= 1000000000000) return (n / 1000000000000).toFixed(n % 1000000000000 === 0 ? 0 : 1) + "T";
-    if (n >= 1000000000) return (n / 1000000000).toFixed(n % 1000000000 === 0 ? 0 : 1) + "B";
-    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + "M";
-    if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
-    return n + " $";
+    let num = Number(n);
+    if (num >= 500000000000000) return "∞ ";
+    if (num >= 1000000000000) return (num / 1000000000000).toFixed(1) + "T";
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "k";
+    return num + " $";
 }
 
-function enterGame(url) {
-    if(isServerLocked && !userData.isSuperAdmin && !userData.isAdmin) {
-        return alert("MÁY CHỦ ĐANG BẢO TRÌ!");
-    }
-    window.location.href = url;
+function enterGame(url, gameId) {
+    const dbPath = gameId === 'tx' ? 'game_taixiu_settings' : (gameId === 'xdach' ? 'game_xidach_settings' : 'game_xocdia_settings');
+    db.ref(dbPath + '/isLocked').once('value', s => {
+        const isGameLocked = s.val() || false;
+        if ((isServerLocked || isGameLocked) && !userData.isSuperAdmin && !userData.isAdmin) {
+            alert("⚠️ QUÂN LỆNH HOÀNG GIA:\nĐế chế đang được trùng tu để trở nên vĩ đại hơn.");
+        } else { window.location.href = url; }
+    });
 }
 
+function setTag(id, tag) { db.ref('server/game_settings/' + id).update({ tag: tag }); }
+function toggleMaint(id) {
+    const dbPath = id === 'tx' ? 'game_taixiu_settings' : (id === 'xdach' ? 'game_xidach_settings' : 'game_xocdia_settings');
+    db.ref(dbPath + '/isLocked').once('value', s => db.ref(dbPath).update({ isLocked: !s.val() }));
+}
+function srvLock(s) { db.ref('server').update({ isLocked: s }); }
+function updateNotice() { const n = document.getElementById("newNotice").value; if(n) db.ref('server').update({ notice: n }).then(()=>alert("Đã lưu!")); }
+function toggleAD(id, c) { db.ref('users/'+id).update({ isAdmin: !c }); }
+function delN(id) { if(confirm("Xóa vĩnh viễn?")) db.ref('users/'+id).remove(); }
 function editM(id, t) {
-    const inputField = document.getElementById("amt_" + id);
-    const val = parseInt(inputField.value);
-    if (isNaN(val) || val <= 0) return alert("Nhập tiền!");
-    inputField.disabled = true;
-    db.ref('users/' + id + '/money').once('value').then(snap => {
-        let n = (t === 1) ? (snap.val() + val) : (snap.val() - val);
-        return db.ref('users/' + id).update({ money: Math.max(0, n) });
-    }).then(() => { inputField.disabled = false; inputField.value = ""; inputCache[id] = ""; });
+    const f = document.getElementById("amt_" + id);
+    const v = parseInt(f.value);
+    if (isNaN(v) || v <= 0) return alert("Nhập tiền!");
+    db.ref('users/' + id + '/money').once('value', snap => {
+        db.ref('users/' + id).update({ money: Math.max(0, snap.val() + (t * v)) });
+    }).then(() => { f.value = ""; inputCache[id] = ""; });
 }
 
-function updateSrvButtons(locked) {
-    if (!userData || !userData.isSuperAdmin) return;
-    const label = document.getElementById("srvStatusDisp");
-    const bLock = document.getElementById("btnLock");
-    const bUnlock = document.getElementById("btnUnlock");
-    if (locked) {
-        label.innerText = "TRẠNG THÁI: ĐÃ KHÓA"; label.style.background = "rgba(255,0,0,0.2)"; label.style.color = "#f44";
-        bLock.style.boxShadow = "0 0 20px #f00"; bUnlock.style.boxShadow = "none";
-    } else {
-        label.innerText = "TRẠNG THÁI: ĐANG MỞ"; label.style.background = "rgba(0,255,0,0.15)"; label.style.color = "#0f0";
-        bUnlock.style.boxShadow = "0 0 20px #00c853"; bLock.style.boxShadow = "none";
-    }
+const gameIds = ['tx', 'xdach', 'xd'];
+function refreshGameUI(id) {
+    const dbPath = id === 'tx' ? 'game_taixiu_settings' : (id === 'xdach' ? 'game_xidach_settings' : 'game_xocdia_settings');
+    const name = id === 'tx' ? 'TÀI XỈU' : (id === 'xd' ? 'XÓC ĐĨA' : 'XÌ DÁCH');
+    db.ref(dbPath + '/isLocked').on('value', s => {
+        const isLocked = s.val() || false;
+        db.ref('server/game_settings/' + id + '/tag').on('value', t => {
+            const tag = t.val() || 'none';
+            const elBtn = document.getElementById("btn" + (id === 'tx' ? 'TX' : (id === 'xd' ? 'XD' : 'XDach')));
+            const elTitle = document.getElementById("title_" + id);
+            const elBadge = document.getElementById("badge_" + id);
+            const elAdminSTT = document.getElementById("stt_" + id + "_admin");
+            const elMaintBtn = document.getElementById("btn_maint_" + id);
+            if(elBtn) {
+                if(isServerLocked) { elBtn.classList.add('maint-mode'); elTitle.innerText = "SERVER BẢO TRÌ"; }
+                else if(isLocked) { elBtn.classList.add('maint-mode'); elTitle.innerText = "BẢO TRÌ"; }
+                else { elBtn.classList.remove('maint-mode'); elTitle.innerText = name + " IMPERIAL"; }
+            }
+            if(elAdminSTT) elAdminSTT.innerText = `${name}: [${tag.toUpperCase()} - ${isLocked?'BẢO TRÌ':'ĐANG MỞ'}]`;
+            if(elMaintBtn) { elMaintBtn.innerText = isLocked ? "HỦY BẢO TRÌ" : "BẢO TRÌ"; elMaintBtn.style.background = isLocked ? "#2e7d32" : "#b71c1c"; }
+        });
+    });
 }
 
 db.ref('server').on('value', s => {
     const data = s.val() || { isLocked: false, notice: "Welcome!" };
     isServerLocked = data.isLocked;
-    const banner = document.getElementById("lockBanner");
-    if(banner) banner.style.display = isServerLocked ? "block" : "none";
+    document.getElementById("lockBanner").style.display = isServerLocked ? "block" : "none";
     document.getElementById("marqueeText").innerText = data.notice;
-    
-    // Cập nhật giao diện bảo trì cho tất cả game (Đã thêm Xì Dách)
-    const btnTX = document.getElementById("btnTX");
-    const btnXD = document.getElementById("btnXD");
-    const btnXDach = document.getElementById("btnXDach");
-
-    if (isServerLocked) { 
-        if(btnTX) { btnTX.style.opacity = "0.3"; document.getElementById("btnPlayTitleTX").innerText = "MÁY CHỦ BẢO TRÌ"; }
-        if(btnXD) { btnXD.style.opacity = "0.3"; document.getElementById("btnPlayTitleXD").innerText = "MÁY CHỦ BẢO TRÌ"; }
-        if(btnXDach) { btnXDach.style.opacity = "0.3"; document.getElementById("btnPlayTitleXDach").innerText = "MÁY CHỦ BẢO TRÌ"; }
-    } else { 
-        if(btnTX) { btnTX.style.opacity = "1"; document.getElementById("btnPlayTitleTX").innerText = "TÀI XỈU IMPERIAL"; }
-        if(btnXD) { btnXD.style.opacity = "1"; document.getElementById("btnPlayTitleXD").innerText = "XÓC ĐĨA IMPERIAL"; }
-        if(btnXDach) { btnXDach.style.opacity = "1"; document.getElementById("btnPlayTitleXDach").innerText = "XÌ DÁCH IMPERIAL"; }
-    }
-    updateSrvButtons(isServerLocked);
+    const label = document.getElementById("srvStatusDisp");
+    if(label) label.innerText = isServerLocked ? "TRẠNG THÁI SERVER: ĐÃ KHÓA" : "TRẠNG THÁI SERVER: ĐANG MỞ";
+    gameIds.forEach(id => refreshGameUI(id));
 });
 
+function login() { 
+    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
+    auth.signInWithEmailAndPassword(u + "@casino.com", p);
+}
+
+function register() {
+    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
+    auth.createUserWithEmailAndPassword(u + "@casino.com", p).then(r => {
+        return db.ref('users/' + r.user.uid).set({ username: u, money: 1000000, isAdmin: false, isSuperAdmin: false });
+    });
+}
+
 auth.onAuthStateChanged(user => {
-    const stBox = document.getElementById("logStatusText");
-    const aForm = document.getElementById("authForm");
     if (user) {
         db.ref('users/' + user.uid).on('value', s => {
             userData = s.val(); if(!userData) return;
             userData.uid = user.uid;
             document.getElementById("loginPanel").style.display = "none";
             document.getElementById("lobbyPanel").style.display = "block";
-            document.getElementById("lobbyName").innerText = userData.username;
-            document.getElementById("lobbyMoney").innerText = formatMoney(userData.money);
+            document.getElementById("lobbyName").innerText = userData.username.toUpperCase();
+            document.getElementById("lobbyMoney").innerText = "Số dư: " + formatMoney(userData.money);
             const rDisp = document.getElementById("myRankDisplay");
-            if(userData.isSuperAdmin) { rDisp.innerText = "ADMIN TỐI CAO"; rDisp.className = "role-badge role-sad"; }
-            else if(userData.isAdmin) { rDisp.innerText = "ADMIN"; rDisp.className = "role-badge role-ad"; }
-            else { rDisp.innerText = "MEMBER"; rDisp.className = "role-badge role-mem"; }
-            if(userData.isSuperAdmin) { document.getElementById("sadDashboard").style.display = "block"; loadMasterControl(); updateSrvButtons(isServerLocked); }
-            loadTop10();
+            if(userData.isSuperAdmin) { rDisp.innerText = "👑ADMIN TỐI CAO👑"; rDisp.className = "role-badge role-sad"; document.getElementById("sadDashboard").style.display = "block"; }
+            else if(userData.isAdmin) { rDisp.innerText = "AD"; rDisp.className = "role-badge role-ad"; }
+            else { rDisp.innerText = "MEM"; rDisp.className = "role-badge role-mem"; }
+        });
+
+        db.ref('users').on('value', snap => {
+            const data = snap.val(); if(!data) return;
+            const arr = Object.keys(data).map(id => ({id, ...data[id]})).sort((a,b) => b.money - a.money);
+            
+            let h10 = ""; arr.slice(0, 10).forEach((u, i) => {
+                let m = u.money; let title = "Phàm Nhân"; let color = "#aaa"; let cls = "";
+                if (m >= 500000000000000) { title = "Tiên Tôn"; color = "#fff"; cls = "rank-vocuc-item"; }
+                else if (m >= 1000000000000) { title = "Đại Độ Kiếp"; color = "#ff3d00"; cls = "rank-do-kiep"; }
+                else if (m >= 500000000000) { title = "Hợp Thể"; color = "#d500f9"; cls = "rank-hop-the"; }
+                else if (m >= 10000000000) { title = "Luyện Hư"; color = "#ffea00"; cls = "rank-luyen-hu"; }
+                else if (m >= 1000000000) { title = "Hóa Thần"; color = "#00e676"; cls = "rank-hoa-than"; }
+                else if (m >= 500000000) { title = "Nguyên Anh"; color = "#00e5ff"; cls = "rank-nguyen-anh"; }
+                else if (m >= 10000000) { title = "Kết Đan"; color = "#2979ff"; }
+                else if (m >= 1000000) { title = "Trúc Cơ"; color = "#d500f9"; }
+                else if (m >= 100000) { title = "Luyện Khí"; color = "#ff4081"; }
+                else { title = "Phàm Nhân"; color = "#999"; }
+
+                h10 += `<div class="user-item-card ${cls}" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #222;">
+                    <span>
+                        <b style="color:#ffd700; margin-right:10px;">#${i+1}</b>
+                        <b style="font-size:14px;">${u.username.toUpperCase()}</b>
+                        <br><span class="tu-vi-tag" style="background:${color}; color:#000;">${title}</span>
+                    </span>
+                    <b style="color:#4caf50; font-size:16px;">Số dư: ${formatMoney(u.money)}</b>
+                </div>`;
+            });
+            document.getElementById("top10List").innerHTML = h10;
+
+            if(userData && userData.isSuperAdmin) {
+                let hSad = ""; arr.forEach(u => {
+                    const cVal = inputCache[u.id] || "";
+                    hSad += `<div class="user-item-card">
+                        <div style="display:flex; justify-content:space-between;">
+                            <b style="font-size:13px; color:#ffd700;">${u.username.toUpperCase()}</b>
+                            <span style="color:#4caf50;">Số dư: ${formatMoney(u.money)}</span>
+                        </div>
+                        <div class="control-grid">
+                            <input type="number" id="amt_${u.id}" class="sad-input" style="padding:5px; margin:0; font-size:12px; height:38px;" placeholder="$$" value="${cVal}" oninput="inputCache['${u.id}']=this.value">
+                            <button onclick="editM('${u.id}',1)" class="btn-mini" style="background:green;">+</button>
+                            <button onclick="editM('${u.id}',-1)" class="btn-mini" style="background:red;">-</button>
+                            <button onclick="toggleAD('${u.id}',${u.isAdmin})" class="btn-mini" style="background:${u.isAdmin?'#ffd700':'#444'};color:${u.isAdmin?'#000':'#fff'}">AD</button>
+                            <button onclick="delN('${u.id}')" class="btn-mini" style="background:#333; ${u.isSuperAdmin?'display:none;':''}">X</button>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById("masterUserList").innerHTML = hSad;
+            }
         });
     } else {
-        setTimeout(() => { stBox.innerText = "KẾT NỐI THÀNH CÔNG!"; aForm.style.display = "block"; }, 1500);
+        setTimeout(() => { document.getElementById("authForm").style.display = "block"; }, 1000);
     }
 });
 
-function saveInput(id, val) { inputCache[id] = val; }
-
-function loadMasterControl() {
-    db.ref('users').on('value', snap => {
-        let html = ""; const data = snap.val();
-        let arr = []; for(let id in data) { arr.push({id, ...data[id]}); }
-        arr.sort((a,b) => b.money - a.money);
-        arr.forEach(u => {
-            const hideDel = u.isSuperAdmin ? 'display:none;' : 'display:flex;';
-            const adColor = u.isAdmin ? "#ffd700" : "#444";
-            const currentInputVal = inputCache[u.id] || "";
-            html += `<div class="user-item-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <b style="font-size:14px; color:#ffd700;">${u.username} ${u.isSuperAdmin?'<span class="role-badge role-sad">SAD</span>':(u.isAdmin?'<span class="role-badge role-ad">AD</span>':'')}</b>
-                <span style="color:#4caf50; font-weight:bold;">${formatMoney(u.money)}</span>
-            </div>
-            <div class="control-grid">
-                <input type="number" id="amt_${u.id}" class="sad-input" style="padding:10px; margin:0; font-size:12px; height:42px;" 
-                placeholder="$$" value="${currentInputVal}" oninput="saveInput('${u.id}', this.value)">
-                <button onclick="editM('${u.id}',1)" class="btn-mini" style="background:green;">+</button>
-                <button onclick="editM('${u.id}',-1)" class="btn-mini" style="background:red;">-</button>
-                <button onclick="toggleAD('${u.id}',${u.isAdmin})" class="btn-mini" style="background:${adColor}; color:${u.isAdmin?'#000':'#fff'};">AD</button>
-                <button onclick="delN('${u.id}')" class="btn-mini" style="background:#333; ${hideDel}">X</button>
-            </div></div>`;
-        });
-        document.getElementById("masterUserList").innerHTML = html;
-    });
-}
-
-function srvLock(s) { db.ref('server').update({ isLocked: s }); }
-function updateNotice() { const n = document.getElementById("newNotice").value; if(n) db.ref('server').update({ notice: n }).then(()=>alert("Đã lưu!")); }
-function toggleAD(id, c) { db.ref('users/'+id).update({ isAdmin: !c }); }
-function delN(id) { if(confirm("Xóa vĩnh viễn?")) db.ref('users/'+id).remove(); }
 function logout() { auth.signOut().then(() => location.reload()); }
-
-function login() { 
-    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
-    if(!u || !p) return alert("Nhập đủ!");
-    document.getElementById("logStatusText").innerText = "ĐANG XÁC THỰC...";
-    auth.signInWithEmailAndPassword(u + "@casino.com", p).catch(() => { alert("Sai thông tin!"); document.getElementById("logStatusText").innerText = "KẾT NỐI THÀNH CÔNG!"; });
-}
-
-function register() {
-    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
-    if(u.length < 3) return alert("Tên quá ngắn!");
-    if(u.length > 12) return alert("Tên quá dài! (Tối đa 12 ký tự)"); 
-    if(p.length < 6) return alert("Mật khẩu ít nhất 6 ký tự!");
-    document.getElementById("logStatusText").innerText = "ĐANG KIỂM TRA TÊN TÀI KHOẢN...";
-    auth.createUserWithEmailAndPassword(u + "@casino.com", p)
-    .then(r => {
-        document.getElementById("logStatusText").innerText = "ĐANG TẠO DỮ LIỆU...";
-        return db.ref('users/' + r.user.uid).set({
-            username: u,
-            money: 1000000,
-            isAdmin: false,
-            isSuperAdmin: false
-        });
-    })
-    .then(() => {
-        alert("ĐĂNG KÝ THÀNH CÔNG!");
-    })
-    .catch(e => {
-        if(e.code === 'auth/email-already-in-use') alert("Tài khoản đã tồn tại!");
-        else alert("Lỗi: " + e.message);
-        document.getElementById("logStatusText").innerText = "KẾT NỐI THÀNH CÔNG!";
-    });
-}
-
-function loadTop10() {
-    db.ref('users').orderByChild('money').limitToLast(10).on('value', snap => {
-        let list = []; snap.forEach(c => { list.push(c.val()); });
-        list.reverse();
-        let h = ""; list.forEach((u, i) => {
-            let rc = u.isSuperAdmin ? "role-sad" : (u.isAdmin ? "role-ad" : "role-mem");
-            let rn = u.isSuperAdmin ? "SAD" : (u.isAdmin ? "AD" : "Mem");
-            h += `<div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid #222;">
-                <span>${i+1}. <b>${u.username}</b> <span class="role-badge ${rc}">${rn}</span></span>
-                <b style="color:#4caf50;">${formatMoney(u.money)}</b>
-            </div>`;
-        });
-        document.getElementById("top10List").innerHTML = h;
-    });
-}
 </script>
 </body>
 </html>
