@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Rocket Crash - Royal Edition V149</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -10,14 +10,61 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap');
-        body { background-color: #05070a; color: white; font-family: 'Inter', sans-serif; overflow: hidden; touch-action: manipulation; -webkit-user-select: none; user-select: none; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sar: env(safe-area-inset-right);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+        }
+
+        html, body { 
+            height: 100%;
+            height: 100dvh; /* Sử dụng dynamic viewport height cho mobile */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #05070a;
+            overscroll-behavior: none; /* Chống pull-to-refresh */
+        }
+
+        body { 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            touch-action: none; 
+            -webkit-user-select: none; 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        #game-canvas { width: 100%; height: 100%; background: radial-gradient(circle at center bottom, #111827 0%, #05070a 100%); }
-        .multiplier-text { text-shadow: 0 0 30px rgba(139, 92, 246, 0.6); z-index: 5; font-variant-numeric: tabular-nums; }
+        
+        #game-canvas { 
+            width: 100%; 
+            height: 100%; 
+            background: radial-gradient(circle at center bottom, #111827 0%, #05070a 100%); 
+            display: block;
+        }
+
+        .multiplier-text { 
+            text-shadow: 0 0 30px rgba(139, 92, 246, 0.6); 
+            z-index: 5; 
+            font-variant-numeric: tabular-nums; 
+        }
+
         .btn-touch { transition: transform 0.1s; }
         .btn-touch:active { transform: scale(0.95); }
+
         .crash-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(3px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-5px, 0, 0); } 40%, 60% { transform: translate3d(5px, 0, 0); } }
+        @keyframes shake { 
+            10%, 90% { transform: translate3d(-2px, 0, 0); } 
+            20%, 80% { transform: translate3d(3px, 0, 0); } 
+            30%, 50%, 70% { transform: translate3d(-5px, 0, 0); } 
+            40%, 60% { transform: translate3d(5px, 0, 0); } 
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .animate-pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -27,7 +74,10 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.5s ease-out;
         }
-        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+        /* Tối ưu hóa padding cho các thiết bị có tai thỏ/nút ảo */
+        .safe-padding-top { padding-top: var(--sat); }
+        .safe-padding-bottom { padding-bottom: calc(var(--sab) + 0.5rem); }
     </style>
 </head>
 <body class="bg-[#05070a]">
@@ -37,7 +87,7 @@
         <p id="loading-text" class="font-orbitron text-purple-400 animate-pulse uppercase tracking-[0.2em] text-[10px]">Đang cảm ứng thiên địa...</p>
     </div>
 
-    <div class="px-3 py-2 flex justify-between items-center bg-gray-900/90 backdrop-blur-md border-b border-gray-800 z-20 shrink-0 h-14">
+    <div class="px-3 flex justify-between items-center bg-gray-900/90 backdrop-blur-md border-b border-gray-800 z-20 shrink-0 h-14 safe-padding-top">
         <div class="flex items-center gap-2">
             <button onclick="goBack()" class="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center active:bg-gray-700 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
@@ -45,15 +95,15 @@
             <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-900/40">
                 <span class="text-base">🚀</span>
             </div>
-            <div class="hidden sm:flex flex-col">
-                <h1 class="text-[10px] font-orbitron font-bold tracking-widest text-purple-400 uppercase">Rocket Crash</h1>
-                <span id="player-name-display" class="text-[10px] text-gray-400 font-bold truncate max-w-[100px]">Ẩn danh đạo hữu</span>
+            <div class="flex flex-col">
+                <h1 class="text-[9px] sm:text-[10px] font-orbitron font-bold tracking-widest text-purple-400 uppercase">Rocket Crash</h1>
+                <span id="player-name-display" class="text-[9px] sm:text-[10px] text-gray-400 font-bold truncate max-w-[80px] sm:max-w-[100px]">Ẩn danh đạo hữu</span>
             </div>
         </div>
         
         <div class="flex items-center gap-2">
             <div class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700 flex items-center gap-1.5 shadow-inner">
-                <span id="balance-display" class="font-orbitron text-sm font-bold tracking-wide text-yellow-500 whitespace-nowrap">0</span>
+                <span id="balance-display" class="font-orbitron text-xs sm:text-sm font-bold tracking-wide text-yellow-500 whitespace-nowrap">0</span>
             </div>
             <button id="admin-btn" onclick="toggleAdminPanel()" style="display: none;" class="w-8 h-8 bg-gray-800/50 rounded-full flex items-center justify-center text-gray-400 active:text-white border border-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -67,14 +117,14 @@
         <div id="game-container" class="relative flex-grow w-full overflow-hidden">
             <canvas id="game-canvas"></canvas>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <div id="multiplier-display" class="text-7xl sm:text-8xl font-orbitron font-bold multiplier-text transition-all duration-75">1.00x</div>
-                <div id="status-message" class="mt-2 text-sm font-bold uppercase tracking-[0.2em] opacity-0 transition-opacity text-purple-300">ĐỢI VÁN MỚI...</div>
+                <div id="multiplier-display" class="text-6xl sm:text-8xl font-orbitron font-bold multiplier-text transition-all duration-75">1.00x</div>
+                <div id="status-message" class="mt-2 text-xs sm:text-sm font-bold uppercase tracking-[0.2em] opacity-0 transition-opacity text-purple-300">ĐỢI VÁN MỚI...</div>
                 <div id="admin-indicator" class="mt-1 text-[10px] font-bold text-red-500 bg-red-900/30 px-2 py-0.5 rounded hidden animate-pulse uppercase tracking-widest font-black">Vận mệnh đang bị chi phối</div>
             </div>
         </div>
 
-        <div class="bg-gray-900 border-t border-gray-800 z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] shrink-0">
-            <div class="max-w-6xl mx-auto p-2 safe-bottom">
+        <div class="bg-gray-900 border-t border-gray-800 z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] shrink-0 safe-padding-bottom">
+            <div class="max-w-6xl mx-auto p-2">
                 <div class="grid grid-cols-2 gap-2">
                     
                     <div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700/50 flex flex-col gap-1.5">
@@ -83,19 +133,19 @@
                             <span id="profit-1" class="text-[9px] font-bold text-green-400 hidden"></span>
                         </div>
                         <div class="grid grid-cols-1 gap-1">
-                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
-                                <span class="text-gray-500 text-[9px] font-bold" id="label-0">100k</span>
-                                <input type="number" id="bet-input-0" value="100000" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none" oninput="formatLabel(0)">
-                                <button onclick="adjustBet(0, 0.5)" class="text-[8px] text-gray-400 hover:text-white px-0.5">1/2</button>
-                                <button onclick="adjustBet(0, 2)" class="text-[8px] text-gray-400 hover:text-white px-0.5">2x</button>
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-8 px-1.5 overflow-hidden">
+                                <span class="text-gray-500 text-[9px] font-bold shrink-0" id="label-0">100k</span>
+                                <input type="number" id="bet-input-0" value="100000" class="w-full bg-transparent text-white font-orbitron text-[11px] focus:outline-none" oninput="formatLabel(0)">
+                                <button onclick="adjustBet(0, 0.5)" class="text-[9px] text-gray-400 hover:text-white px-0.5">1/2</button>
+                                <button onclick="adjustBet(0, 2)" class="text-[9px] text-gray-400 hover:text-white px-0.5">2x</button>
                             </div>
-                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
-                                <span class="text-purple-500 text-[8px] font-bold">AUTO</span>
-                                <input type="number" id="auto-input-0" placeholder="≥ 1.5" step="0.1" min="1.5" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none">
-                                <button id="auto-btn-0" onclick="toggleAuto(0)" class="bg-green-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap">Bật</button>
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-8 px-1.5 overflow-hidden">
+                                <span class="text-purple-500 text-[8px] font-bold shrink-0">AUTO</span>
+                                <input type="number" id="auto-input-0" placeholder="≥ 1.5" step="0.1" min="1.5" class="w-full bg-transparent text-white font-orbitron text-[11px] focus:outline-none">
+                                <button id="auto-btn-0" onclick="toggleAuto(0)" class="bg-green-600 text-[9px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap">Bật</button>
                             </div>
                         </div>
-                        <button id="btn-0" onclick="handleAction(0)" class="w-full h-9 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch shadow-lg text-white flex flex-col items-center justify-center leading-tight uppercase">Cược</button>
+                        <button id="btn-0" onclick="handleAction(0)" class="w-full h-10 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch shadow-lg text-white flex flex-col items-center justify-center leading-tight uppercase">Cược</button>
                     </div>
 
                     <div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700/50 flex flex-col gap-1.5">
@@ -104,19 +154,19 @@
                             <span id="profit-2" class="text-[9px] font-bold text-green-400 hidden"></span>
                         </div>
                         <div class="grid grid-cols-1 gap-1">
-                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
-                                <span class="text-gray-500 text-[9px] font-bold" id="label-1">100k</span>
-                                <input type="number" id="bet-input-1" value="100000" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none" oninput="formatLabel(1)">
-                                <button onclick="adjustBet(1, 0.5)" class="text-[8px] text-gray-400 hover:text-white px-0.5">1/2</button>
-                                <button onclick="adjustBet(1, 2)" class="text-[8px] text-gray-400 hover:text-white px-0.5">2x</button>
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-8 px-1.5 overflow-hidden">
+                                <span class="text-gray-500 text-[9px] font-bold shrink-0" id="label-1">100k</span>
+                                <input type="number" id="bet-input-1" value="100000" class="w-full bg-transparent text-white font-orbitron text-[11px] focus:outline-none" oninput="formatLabel(1)">
+                                <button onclick="adjustBet(1, 0.5)" class="text-[9px] text-gray-400 hover:text-white px-0.5">1/2</button>
+                                <button onclick="adjustBet(1, 2)" class="text-[9px] text-gray-400 hover:text-white px-0.5">2x</button>
                             </div>
-                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
-                                <span class="text-purple-500 text-[8px] font-bold">AUTO</span>
-                                <input type="number" id="auto-input-1" placeholder="≥ 1.5" step="0.1" min="1.5" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none">
-                                <button id="auto-btn-1" onclick="toggleAuto(1)" class="bg-green-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap">Bật</button>
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-8 px-1.5 overflow-hidden">
+                                <span class="text-purple-500 text-[8px] font-bold shrink-0">AUTO</span>
+                                <input type="number" id="auto-input-1" placeholder="≥ 1.5" step="0.1" min="1.5" class="w-full bg-transparent text-white font-orbitron text-[11px] focus:outline-none">
+                                <button id="auto-btn-1" onclick="toggleAuto(1)" class="bg-green-600 text-[9px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap">Bật</button>
                             </div>
                         </div>
-                        <button id="btn-1" onclick="handleAction(1)" class="w-full h-9 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch shadow-lg text-white flex flex-col items-center justify-center leading-tight uppercase">Cược</button>
+                        <button id="btn-1" onclick="handleAction(1)" class="w-full h-10 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch shadow-lg text-white flex flex-col items-center justify-center leading-tight uppercase">Cược</button>
                     </div>
 
                 </div>
@@ -269,13 +319,19 @@
 
         function updateDB() { if (state.user) db.ref('users/' + state.user.uid).update({ money: state.balance }); }
         function goBack() { if(confirm("🔥 Rút lui khỏi linh địa?")) window.location.href = "index.html"; }
+        
         function resize() { 
-            canvas.width = canvas.parentElement.clientWidth; 
-            canvas.height = canvas.parentElement.clientHeight; 
+            const container = document.getElementById('game-container');
+            canvas.width = container.clientWidth; 
+            canvas.height = container.clientHeight; 
             initStars(); 
             state.rocketY = canvas.height * 0.7; 
         }
-        window.addEventListener('resize', resize);
+
+        window.addEventListener('resize', () => {
+            setTimeout(resize, 100); // Delay nhỏ để trình duyệt cập nhật layout
+        });
+
         function initStars() { state.stars = []; for(let i=0; i<60; i++) state.stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 1.5 + 0.5, speed: Math.random() * 2 + 0.5 }); }
 
         function calculateCrashPoint() {
@@ -360,6 +416,7 @@
                 if (!bet.pending) { updateButtonState(i, 'default'); } 
                 else { updateButtonState(i, 'pending'); }
             });
+            document.getElementById('game-container').classList.remove('crash-shake');
             startGlobalTimer();
         }
 
@@ -439,11 +496,11 @@
                 const val = parseFloat(input.value);
                 if (isNaN(val) || val < 1.5) { showToast("Tự động rút phải ≥ 1.5x", "error"); return; }
                 bet.autoEnabled = true; btn.innerText = "Tắt";
-                btn.className = "bg-red-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-red-500 transition-colors uppercase whitespace-nowrap";
+                btn.className = "bg-red-600 text-[9px] px-1.5 py-0.5 rounded font-bold hover:bg-red-500 transition-colors uppercase whitespace-nowrap";
                 showToast("Đã kích hoạt tự động rút", "success");
             } else {
                 bet.autoEnabled = false; btn.innerText = "Bật";
-                btn.className = "bg-green-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap";
+                btn.className = "bg-green-600 text-[9px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap";
                 showToast("Đã tắt tự động rút", "info");
             }
         }
@@ -477,20 +534,20 @@
             const btn = document.getElementById(`btn-${i}`);
             if (!btn) return;
             if (status === 'default') { 
-                btn.className = "w-full h-9 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch text-white flex flex-col items-center justify-center shadow-lg uppercase"; 
+                btn.className = "w-full h-10 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch text-white flex flex-col items-center justify-center shadow-lg uppercase"; 
                 btn.innerHTML = (state.isFlying || state.crashed) ? "VÁN SAU" : "CƯỢC"; 
                 btn.disabled = false; btn.classList.remove('opacity-50');
             }
             else if (status === 'pending') { 
-                btn.className = "w-full h-9 bg-red-600 rounded-xl font-bold text-[11px] text-white flex flex-col items-center justify-center shadow-inner uppercase btn-touch"; 
+                btn.className = "w-full h-10 bg-red-600 rounded-xl font-bold text-[11px] text-white flex flex-col items-center justify-center shadow-inner uppercase btn-touch"; 
                 btn.innerHTML = "HỦY"; btn.disabled = false;
             }
             else if (status === 'active') { 
-                btn.className = "w-full h-9 bg-orange-500 rounded-xl font-bold text-[11px] text-white flex flex-col items-center justify-center btn-touch shadow-lg uppercase"; 
+                btn.className = "w-full h-10 bg-orange-500 rounded-xl font-bold text-[11px] text-white flex flex-col items-center justify-center btn-touch shadow-lg uppercase"; 
                 btn.innerHTML = "RÚT"; btn.disabled = false; btn.classList.remove('opacity-50');
             }
             else if (status === 'cashed' || status === 'crashed') { 
-                btn.className = "w-full h-9 bg-gray-800 rounded-xl font-bold text-[11px] text-gray-500 border border-gray-700 flex flex-col items-center justify-center uppercase"; 
+                btn.className = "w-full h-10 bg-gray-800 rounded-xl font-bold text-[11px] text-gray-500 border border-gray-700 flex flex-col items-center justify-center uppercase"; 
                 btn.innerHTML = status === 'cashed' ? "XONG" : "THUA"; btn.disabled = true; 
             }
             else if (status === 'disabled') { btn.disabled = true; btn.classList.add('opacity-50'); }
@@ -503,7 +560,16 @@
         function sendGlobalNotice() { const input = document.getElementById('admin-notice-input'); const msg = input.value.trim(); if(msg) db.ref('server/notice').set({ text: msg, timestamp: Date.now() }).then(() => { showToast("Đã phát lệnh!", "success"); input.value = ""; }); }
         function setGameRatio() { const val = parseFloat(document.getElementById('admin-ratio-input').value); if (!isNaN(val) && val > 0) { state.gameRatio = val; showToast(`Hệ số: ${val}x`, "success"); } }
         function toggleHighRate() { state.highRateMode = !state.highRateMode; document.getElementById('high-rate-status').innerText = state.highRateMode ? "BẬT" : "TẮT"; showToast(state.highRateMode ? "Bật tỉ lệ cao!" : "Tắt tỉ lệ cao.", state.highRateMode ? "success" : "error"); }
-        window.onload = () => { resize(); const loop = () => { update(); draw(); requestAnimationFrame(loop); }; loop(); };
+        
+        window.onload = () => { 
+            resize(); 
+            const loop = () => { 
+                update(); 
+                draw(); 
+                requestAnimationFrame(loop); 
+            }; 
+            loop(); 
+        };
     </script>
 </body>
 </html>
