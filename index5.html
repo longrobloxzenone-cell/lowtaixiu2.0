@@ -3,266 +3,507 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rocket Crash - Royal Edition</title>
+    <title>Rocket Crash - Royal Edition V149</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; user-select: none; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; height: 100svh; display: flex; flex-direction: column; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap');
+        body { background-color: #05070a; color: white; font-family: 'Inter', sans-serif; overflow: hidden; touch-action: manipulation; -webkit-user-select: none; user-select: none; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        #game-canvas { width: 100%; height: 100%; background: radial-gradient(circle at center bottom, #111827 0%, #05070a 100%); }
+        .multiplier-text { text-shadow: 0 0 30px rgba(139, 92, 246, 0.6); z-index: 5; font-variant-numeric: tabular-nums; }
+        .btn-touch { transition: transform 0.1s; }
+        .btn-touch:active { transform: scale(0.95); }
+        .crash-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(3px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-5px, 0, 0); } 40%, 60% { transform: translate3d(5px, 0, 0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .animate-pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        /* HEADER */
-        .header { height: 55px; padding: 0 15px; background: #0b0e11; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e2329; flex-shrink: 0; z-index: 100; }
-        #userMoney { color: #00ff88; font-weight: 900; font-size: 16px; }
-
-        /* HISTORY BAR */
-        #historyBar { height: 35px; background: #14181d; display: flex; align-items: center; gap: 8px; padding: 0 10px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #1e2329; scrollbar-width: none; }
-        .h-item { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 12px; background: #2b3139; }
-        .h-red { color: #ff4d4d; border: 1px solid #ff4d4d; }
-        .h-green { color: #00ff88; border: 1px solid #00ff88; }
-
-        /* GAME AREA */
-        #gameArea { position: relative; flex: 1; width: 100%; background: radial-gradient(circle at 50% 50%, #0a192f 0%, #020b16 100%); overflow: hidden; }
-        .sky-bg { position: absolute; width: 300%; height: 300%; top: -100%; left: -100%; background-image: radial-gradient(1.5px 1.5px at 50px 80px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 150px 250px, #00f2fe, rgba(0,0,0,0)); background-size: 300px 300px; opacity: 0; transition: opacity 1s; z-index: 1; }
-        .sky-active { opacity: 0.5; animation: moveSky 2s linear infinite; }
-        @keyframes moveSky { from { transform: translate(0, 0); } to { transform: translate(-150px, 150px); } }
-
-        /* ROCKET & DISPLAY */
-        #rocket { position: absolute; font-size: 45px; bottom: 30px; left: 30px; z-index: 10; transition: transform 0.1s linear; }
-        #displayCenter { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; z-index: 20; }
-        #multiNum { font-size: 70px; font-weight: 900; color: #fff; text-shadow: 0 0 30px rgba(0,255,136,0.3); }
-        #countdown { color: #ffd700; font-size: 14px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-top: 10px; }
-
-        /* CONTROLS */
-        .controls-wrapper { height: 160px; background: #0b0e11; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid #1e2329; flex-shrink: 0; }
-        .bet-card { background: #1e2329; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #2b3139; }
-        .input-box { display: flex; justify-content: space-between; align-items: center; background: #000; border-radius: 8px; padding: 8px 12px; }
-        .input-box span { color: #ffd700; font-size: 22px; font-weight: bold; cursor: pointer; padding: 0 5px; }
-        .input-box b { font-size: 15px; color: #fff; }
-
-        .btn-main { width: 100%; height: 55px; border-radius: 10px; border: none; font-weight: 900; font-size: 15px; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-bet { background: #005a34; color: #00ff88; border: 1px solid #00ff88; }
-        .btn-cancel { background: #b71c1c; color: #fff; }
-        .btn-cashout { background: #00c853; color: #fff; box-shadow: 0 0 15px rgba(0,200,83,0.5); }
-        .btn-done { background: #2b3139; color: #848e9c; cursor: default; }
-        .btn-main span { font-size: 9px; opacity: 0.8; font-weight: normal; margin-top: 4px; }
-
-        /* ADMIN PANEL OVERLAY */
-        #adminOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; padding: 20px; }
-        .admin-box { background: #1e2329; border: 2px solid #ff0000; border-radius: 20px; padding: 20px; max-width: 400px; margin: 40px auto; }
-        .admin-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        #loading-overlay {
+            position: fixed; inset: 0; background: #05070a; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body>
+<body class="bg-[#05070a]">
 
-<div class="header">
-    <button onclick="window.location.href='index.html'" style="background:none; border:none; color:#848e9c; font-size:24px;">✕</button>
-    <div id="userMoney">ĐANG TẢI...</div>
-    <div id="adminIcon" onclick="toggleAdmin()" style="cursor:pointer; display:none; font-size:20px;">⚙️</div>
-</div>
-
-<div id="historyBar"></div>
-
-<div id="gameArea">
-    <div id="skyBg" class="sky-bg"></div>
-    <div id="displayCenter">
-        <h1 id="multiNum">1.00x</h1>
-        <div id="countdown">ĐANG KẾT NỐI...</div>
+    <div id="loading-overlay">
+        <div class="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p id="loading-text" class="font-orbitron text-purple-400 animate-pulse uppercase tracking-[0.2em] text-[10px]">Đang cảm ứng thiên địa...</p>
     </div>
-    <div id="rocket">🚀</div>
-</div>
 
-<div class="controls-wrapper">
-    <div class="bet-card">
-        <div class="input-box"><span onclick="adjust(1,-100000)">−</span><b id="betTxt1">100K</b><span onclick="adjust(1,100000)">+</span></div>
-        <button id="btn1" onclick="act(1)" class="btn-main btn-bet">CƯỢC<span>Vòng tới</span></button>
-    </div>
-    <div class="bet-card">
-        <div class="input-box"><span onclick="adjust(2,-100000)">−</span><b id="betTxt2">100K</b><span onclick="adjust(2,100000)">+</span></div>
-        <button id="btn2" onclick="act(2)" class="btn-main btn-bet">CƯỢC<span>Vòng tới</span></button>
-    </div>
-</div>
-
-<div id="adminOverlay" onclick="toggleAdmin()">
-    <div class="admin-box" onclick="event.stopPropagation()">
-        <h2 style="color:#ff0000; text-align:center; margin-bottom:20px;">MASTER CONTROL</h2>
-        <div id="sadOnly" style="display:none;">
-            <button class="admin-btn" style="background:#b71c1c; color:#fff;" onclick="srvLock(true)">KHÓA TOÀN SERVER</button>
-            <button class="admin-btn" style="background:#2e7d32; color:#fff;" onclick="srvLock(false)">MỞ TOÀN SERVER</button>
-            <hr style="margin:15px 0; opacity:0.2;">
+    <div class="px-3 py-2 flex justify-between items-center bg-gray-900/90 backdrop-blur-md border-b border-gray-800 z-20 shrink-0 h-14">
+        <div class="flex items-center gap-2">
+            <button onclick="goBack()" class="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center active:bg-gray-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-900/40">
+                <span class="text-base">🚀</span>
+            </div>
+            <div class="hidden sm:flex flex-col">
+                <h1 class="text-[10px] font-orbitron font-bold tracking-widest text-purple-400 uppercase">Rocket Crash</h1>
+                <span id="player-name-display" class="text-[10px] text-gray-400 font-bold truncate max-w-[100px]">Ẩn danh đạo hữu</span>
+            </div>
         </div>
-        <button class="admin-btn" style="background:#f57c00; color:#fff;" onclick="toggleGameLock()">KHÓA/MỞ GAME NÀY</button>
-        <button class="admin-btn" style="background:#333; color:#fff; margin-top:30px;" onclick="toggleAdmin()">ĐÓNG BẢNG</button>
+        
+        <div class="flex items-center gap-2">
+            <div class="bg-gray-800 px-3 py-1 rounded-full border border-gray-700 flex items-center gap-1.5 shadow-inner">
+                <span id="balance-display" class="font-orbitron text-sm font-bold tracking-wide text-yellow-500 whitespace-nowrap">0</span>
+            </div>
+            <button id="admin-btn" onclick="toggleAdminPanel()" style="display: none;" class="w-8 h-8 bg-gray-800/50 rounded-full flex items-center justify-center text-gray-400 active:text-white border border-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+        </div>
     </div>
-</div>
 
-<script>
-const firebaseConfig = { apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", authDomain: "tx888-85658.firebaseapp.com", databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", projectId: "tx888-85658", storageBucket: "tx888-85658.firebasestorage.app", messagingSenderId: "246211516842", appId: "1:246211516842:web:24a3598d54b037676c73d3" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database(), auth = firebase.auth();
+    <div class="flex-grow flex flex-col relative overflow-hidden">
+        <div id="history-container" class="flex gap-2 px-2 py-1 bg-black/40 overflow-x-auto no-scrollbar whitespace-nowrap min-h-[36px] items-center border-b border-gray-800/50 shrink-0"></div>
 
-let userData = null, isPlaying = false, isWaiting = true, currentX = 1.00, crashX = 0;
-let bets = { 1: { amt: 100000, active: false, cashed: false }, 2: { amt: 100000, active: false, cashed: false } };
+        <div id="game-container" class="relative flex-grow w-full overflow-hidden">
+            <canvas id="game-canvas"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div id="multiplier-display" class="text-7xl sm:text-8xl font-orbitron font-bold multiplier-text transition-all duration-75">1.00x</div>
+                <div id="status-message" class="mt-2 text-sm font-bold uppercase tracking-[0.2em] opacity-0 transition-opacity text-purple-300">ĐỢI VÁN MỚI...</div>
+                <div id="admin-indicator" class="mt-1 text-[10px] font-bold text-red-500 bg-red-900/30 px-2 py-0.5 rounded hidden animate-pulse uppercase tracking-widest font-black">Vận mệnh đang bị chi phối</div>
+            </div>
+        </div>
 
-function nFormatter(num) {
-    if (num >= 1000000000000) return (num / 1000000000000).toFixed(1) + 'T';
-    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
-    return num;
-}
+        <div class="bg-gray-900 border-t border-gray-800 z-20 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] shrink-0">
+            <div class="max-w-6xl mx-auto p-2 safe-bottom">
+                <div class="grid grid-cols-2 gap-2">
+                    
+                    <div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700/50 flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Linh Môn 1</span>
+                            <span id="profit-1" class="text-[9px] font-bold text-green-400 hidden"></span>
+                        </div>
+                        <div class="grid grid-cols-1 gap-1">
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
+                                <span class="text-gray-500 text-[9px] font-bold" id="label-0">100k</span>
+                                <input type="number" id="bet-input-0" value="100000" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none" oninput="formatLabel(0)">
+                                <button onclick="adjustBet(0, 0.5)" class="text-[8px] text-gray-400 hover:text-white px-0.5">1/2</button>
+                                <button onclick="adjustBet(0, 2)" class="text-[8px] text-gray-400 hover:text-white px-0.5">2x</button>
+                            </div>
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
+                                <span class="text-purple-500 text-[8px] font-bold">AUTO</span>
+                                <input type="number" id="auto-input-0" placeholder="≥ 1.5" step="0.1" min="1.5" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none">
+                                <button id="auto-btn-0" onclick="toggleAuto(0)" class="bg-green-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap">Bật</button>
+                            </div>
+                        </div>
+                        <button id="btn-0" onclick="handleAction(0)" class="w-full h-9 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch shadow-lg text-white flex flex-col items-center justify-center leading-tight uppercase">Cược</button>
+                    </div>
 
-auth.onAuthStateChanged(user => {
-    if (user) {
-        db.ref('users/' + user.uid).on('value', s => {
-            userData = s.val(); userData.uid = user.uid;
-            document.getElementById('userMoney').innerText = nFormatter(userData.money) + " $";
-            // QUYỀN ADMIN: HIỂN THỊ ICON CÀI ĐẶT
-            if(userData.isSuperAdmin || userData.isAdmin) {
-                document.getElementById('adminIcon').style.display = "block";
-                if(userData.isSuperAdmin) document.getElementById('sadOnly').style.display = "block";
-            }
-        });
-        loadHistory();
-    } else { window.location.href = "index.html"; }
-});
+                    <div class="bg-gray-800/80 p-2 rounded-xl border border-gray-700/50 flex flex-col gap-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Linh Môn 2</span>
+                            <span id="profit-2" class="text-[9px] font-bold text-green-400 hidden"></span>
+                        </div>
+                        <div class="grid grid-cols-1 gap-1">
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
+                                <span class="text-gray-500 text-[9px] font-bold" id="label-1">100k</span>
+                                <input type="number" id="bet-input-1" value="100000" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none" oninput="formatLabel(1)">
+                                <button onclick="adjustBet(1, 0.5)" class="text-[8px] text-gray-400 hover:text-white px-0.5">1/2</button>
+                                <button onclick="adjustBet(1, 2)" class="text-[8px] text-gray-400 hover:text-white px-0.5">2x</button>
+                            </div>
+                            <div class="flex items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 h-7 px-1.5 overflow-hidden">
+                                <span class="text-purple-500 text-[8px] font-bold">AUTO</span>
+                                <input type="number" id="auto-input-1" placeholder="≥ 1.5" step="0.1" min="1.5" class="w-full bg-transparent text-white font-orbitron text-[10px] focus:outline-none">
+                                <button id="auto-btn-1" onclick="toggleAuto(1)" class="bg-green-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap">Bật</button>
+                            </div>
+                        </div>
+                        <button id="btn-1" onclick="handleAction(1)" class="w-full h-9 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch shadow-lg text-white flex flex-col items-center justify-center leading-tight uppercase">Cược</button>
+                    </div>
 
-// LỊCH SỬ BAY TỪ FIREBASE
-function loadHistory() {
-    db.ref('game_rocket_history').limitToLast(15).on('value', s => {
-        let h = ""; 
-        s.forEach(child => {
-            let val = child.val().x;
-            let cls = val >= 2 ? "h-green" : "h-red";
-            h = `<div class="h-item ${cls}">${val.toFixed(2)}x</div>` + h;
-        });
-        document.getElementById('historyBar').innerHTML = h;
-    });
-}
+                </div>
+            </div>
+        </div>
+    </div>
 
-function adjust(n, v) {
-    if(isPlaying || (isWaiting && bets[n].active)) return;
-    bets[n].amt = Math.max(100000, bets[n].amt + v);
-    document.getElementById('betTxt'+n).innerText = nFormatter(bets[n].amt);
-}
+    <div id="admin-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-gray-900 w-full max-w-sm rounded-3xl border border-purple-500/30 shadow-2xl animate-pop-in overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="bg-purple-600/20 px-5 py-4 border-b border-gray-800 flex justify-between items-center shrink-0">
+                <h2 class="text-sm font-bold text-purple-400 font-orbitron uppercase tracking-widest">Hội Nghị Quản Trị</h2>
+                <button onclick="toggleAdminPanel()" class="text-gray-500 hover:text-white text-2xl px-2">✕</button>
+            </div>
+            
+            <div class="p-5 space-y-6 overflow-y-auto no-scrollbar flex-grow">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Định Đoạt Điểm Nổ</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="admin-next-result" placeholder="X.XX" step="0.01" min="1.00" class="flex-grow bg-black border border-gray-700 rounded-xl h-11 px-4 text-white font-orbitron text-sm outline-none focus:border-purple-500">
+                        <button onclick="setAdminResult()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 rounded-xl text-xs uppercase shadow-lg">Set</button>
+                    </div>
+                </div>
+                
+                <button onclick="forceCrashNow()" class="w-full bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 h-11 rounded-xl font-bold text-red-500 text-[10px] uppercase tracking-widest transition-all">Kích Nổ Ngay</button>
+                
+                <div id="sad-powers" class="hidden space-y-4 pt-5 border-t border-gray-800">
+                    <p class="text-[9px] font-black text-yellow-500 uppercase tracking-[0.2em]">Quyền SAD Tối Cao</p>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase">Hệ số linh khí</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="admin-ratio-input" placeholder="1.0" step="0.1" min="0.1" class="flex-grow bg-black border border-gray-700 rounded-xl h-10 px-4 text-white font-orbitron text-xs outline-none focus:border-yellow-500">
+                            <button onclick="setGameRatio()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold px-4 rounded-xl text-[10px] uppercase">Lưu</button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-blue-400 uppercase">Phát lệnh Server</label>
+                        <div class="flex flex-col gap-2">
+                            <textarea id="admin-notice-input" placeholder="Nhập nội dung thông báo..." class="w-full bg-black border border-gray-700 rounded-xl p-3 text-white text-xs outline-none focus:border-blue-500 h-20 no-scrollbar"></textarea>
+                            <button onclick="sendGlobalNotice()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold h-10 rounded-xl text-[10px] uppercase shadow-lg shadow-blue-900/20">Phát lệnh ngay</button>
+                        </div>
+                    </div>
+                    <button id="toggle-high-rate" onclick="toggleHighRate()" class="w-full bg-gray-800 border border-gray-700 h-10 rounded-xl font-bold text-gray-300 text-[10px] uppercase transition-all">
+                        Chế độ tỉ lệ cao: <span id="high-rate-status">TẮT</span>
+                    </button>
+                    <button onclick="clearAllHistory()" class="w-full bg-gray-700 h-9 rounded-xl font-bold text-white text-[10px] uppercase">Xóa Lịch Sử Game</button>
+                </div>
+            </div>
+            <div class="h-4 shrink-0"></div>
+        </div>
+    </div>
 
-function startWaiting() {
-    isWaiting = true; isPlaying = false;
-    let t = 8;
-    document.getElementById('skyBg').classList.remove('sky-active');
-    document.getElementById('multiNum').innerText = "VÀO CƯỢC";
-    document.getElementById('multiNum').style.color = "#fff";
-    document.getElementById('rocket').innerText = "🚀";
-    document.getElementById('rocket').style.bottom = "30px";
-    document.getElementById('rocket').style.left = "30px";
-    document.getElementById('rocket').style.transform = "rotate(0deg)";
+    <div id="toast-container" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none w-full px-4 text-center"></div>
 
-    let timer = setInterval(() => {
-        document.getElementById('countdown').innerText = "BẮT ĐẦU TRONG " + t + "S";
-        if(t <= 0) { clearInterval(timer); document.getElementById('countdown').innerText = "ĐANG BAY..."; startFlying(); }
-        t--;
-    }, 1000);
-}
-
-function startFlying() {
-    isWaiting = false; isPlaying = true;
-    currentX = 1.00;
-    // Thuật toán Crash ngẫu nhiên
-    crashX = (100 / (100 - (Math.random() * 97))).toFixed(2);
-    if(crashX < 1.01) crashX = 1.01;
-    
-    [1,2].forEach(n => {
-        let b = document.getElementById('btn'+n);
-        if(bets[n].active) {
-            b.className = "btn-main btn-cashout";
-            b.innerHTML = "RÚT TIỀN<span>" + nFormatter(bets[n].amt) + "</span>";
-        } else { b.className = "btn-main btn-done"; b.innerHTML = "ĐANG BAY<span>...</span>"; }
-    });
-
-    let loop = setInterval(() => {
-        currentX += 0.01 + (currentX / 150);
-        document.getElementById('multiNum').innerText = currentX.toFixed(2) + "x";
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", authDomain: "tx888-85658.firebaseapp.com", databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", projectId: "tx888-85658", storageBucket: "tx888-85658.firebasestorage.app", messagingSenderId: "246211516842", appId: "1:246211516842:web:24a3598d54b037676c73d3" };
         
-        [1,2].forEach(n => { 
-            if(bets[n].active && !bets[n].cashed) {
-                document.getElementById('btn'+n).innerHTML = "RÚT TIỀN<span>+" + nFormatter(Math.floor(bets[n].amt * currentX)) + "</span>";
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database(), auth = firebase.auth();
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const multiplierDisplay = document.getElementById('multiplier-display');
+        const statusMessage = document.getElementById('status-message');
+        const balanceDisplay = document.getElementById('balance-display');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const historyContainer = document.getElementById('history-container');
+        const adminIndicator = document.getElementById('admin-indicator');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        let state = {
+            user: null, balance: 0, multiplier: 1.00, targetCrash: 0, isFlying: false, isWaiting: false, crashed: false, startTime: 0, stars: [], particles: [], rocketY: 0,
+            bets: [ 
+                { amount: 0, active: false, pending: false, cashedOut: false, autoValue: 0, autoEnabled: false }, 
+                { amount: 0, active: false, pending: false, cashedOut: false, autoValue: 0, autoEnabled: false } 
+            ],
+            adminOverride: null, highRateMode: false, gameRatio: 1.0, lastNoticeTimestamp: 0, isLoaded: false,
+            lowStreak: 0 
+        };
+
+        function hideLoading() {
+            if (state.isLoaded) return;
+            state.isLoaded = true;
+            if (loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
             }
-        });
-        
-        let r = document.getElementById('rocket');
-        let pos = (currentX - 1) * 70;
-        if (pos < 180) {
-            r.style.bottom = (30 + pos * 0.7) + "px";
-            r.style.left = (30 + pos * 1.1) + "px";
-            r.style.transform = "rotate(-45deg)";
-        } else {
-            document.getElementById('skyBg').classList.add('sky-active');
-            r.style.transform = `rotate(-45deg) translate(${Math.random()*2}px, ${Math.random()*2}px)`;
         }
 
-        if(currentX >= crashX) { clearInterval(loop); crash(); }
-    }, 100);
-}
+        setTimeout(() => { if (!state.isLoaded) hideLoading(); }, 6000);
 
-function act(n) {
-    if(!userData) return;
-    let b = document.getElementById('btn'+n);
-    if(isWaiting && !bets[n].active) {
-        if(userData.money < bets[n].amt) return;
-        bets[n].active = true; bets[n].cashed = false;
-        db.ref('users/'+userData.uid).update({ money: userData.money - bets[n].amt });
-        b.className = "btn-main btn-cancel";
-        b.innerHTML = "HỦY<span>" + nFormatter(bets[n].amt) + "</span>";
-    } else if(isWaiting && bets[n].active) {
-        bets[n].active = false;
-        db.ref('users/'+userData.uid).update({ money: userData.money + bets[n].amt });
-        b.className = "btn-main btn-bet";
-        b.innerHTML = "CƯỢC<span>Vòng tới</span>";
-    } else if(isPlaying && bets[n].active && !bets[n].cashed) {
-        let win = Math.floor(bets[n].amt * currentX);
-        db.ref('users/'+userData.uid).update({ money: userData.money + win });
-        bets[n].cashed = true;
-        b.className = "btn-main btn-done";
-        b.innerHTML = "ĐÃ RÚT<span>+" + nFormatter(win) + "</span>";
-    }
-}
+        function formatMoney(n) {
+            let num = Number(n);
+            if (num >= 500000000000000) return "∞";
+            if (num >= 1000000000000) return (num / 1000000000000).toFixed(1) + "T";
+            if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+            if (num >= 1000) return (num / 1000).toFixed(1) + "k";
+            return num.toLocaleString();
+        }
 
-function crash() {
-    isPlaying = false;
-    document.getElementById('skyBg').classList.remove('sky-active');
-    document.getElementById('multiNum').innerText = "💥 " + currentX.toFixed(2);
-    document.getElementById('multiNum').style.color = "#ff4d4d";
-    document.getElementById('rocket').innerText = "💥";
-    
-    // LƯU LỊCH SỬ LÊN FIREBASE
-    db.ref('game_rocket_history').push({ x: parseFloat(currentX.toFixed(2)), time: Date.now() });
+        function formatLabel(i) {
+            const val = document.getElementById(`bet-input-${i}`).value;
+            if (document.getElementById(`label-${i}`)) document.getElementById(`label-${i}`).innerText = formatMoney(val || 0);
+        }
 
-    setTimeout(() => {
-        [1,2].forEach(n => {
-            bets[n].active = false; bets[n].cashed = false;
-            let b = document.getElementById('btn'+n);
-            b.className = "btn-main btn-bet";
-            b.innerHTML = "CƯỢC<span>Vòng tới</span>";
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                listenToServerNotice();
+                db.ref('users/' + user.uid).on('value', s => {
+                    const data = s.val();
+                    if (!data) {
+                        db.ref('users/' + user.uid).set({ name: "Tân thủ đạo hữu", money: 1000000, isAdmin: false, isSuperAdmin: false });
+                        return;
+                    }
+                    state.user = { uid: user.uid, ...data };
+                    state.balance = data.money;
+                    updateUI();
+                    playerNameDisplay.innerText = data.name || "Ẩn danh đạo hữu";
+                    const ab = document.getElementById('admin-btn');
+                    const sadP = document.getElementById('sad-powers');
+                    if (data.isSuperAdmin || data.isAdmin) ab.style.display = 'flex';
+                    if (data.isSuperAdmin) sadP.classList.remove('hidden');
+                    else sadP.classList.add('hidden');
+                    
+                    if (!state.isLoaded) {
+                        hideLoading();
+                        seedInitialHistory();
+                    }
+                    if (!state.isWaiting && !state.isFlying && !state.crashed) {
+                        startGlobalTimer();
+                    }
+                });
+            } else { window.location.href = "index.html"; }
         });
-        startWaiting();
-    }, 2500);
-}
 
-// ADMIN FUNCTIONS
-function toggleAdmin() {
-    if(!userData.isAdmin && !userData.isSuperAdmin) return;
-    let ov = document.getElementById('adminOverlay');
-    ov.style.display = (ov.style.display === "block") ? "none" : "block";
-}
-function srvLock(s) { db.ref('server').update({ isLocked: s }); alert("Đã cập nhật!"); }
-function toggleGameLock() {
-    db.ref('game_rocket_settings/isLocked').once('value', s => {
-        db.ref('game_rocket_settings').update({ isLocked: !s.val() });
-        alert("Đã thay đổi trạng thái game!");
-    });
-}
+        function seedInitialHistory() {
+            if (historyContainer.children.length > 0) return;
+            for(let i=0; i<3; i++) { addHistory(1.1 + (Math.random() * 0.8)); }
+        }
 
-startWaiting();
-</script>
+        function listenToServerNotice() {
+            db.ref('server/notice').on('value', snap => {
+                const notice = snap.val();
+                if (notice && notice.timestamp > state.lastNoticeTimestamp) {
+                    if (state.lastNoticeTimestamp !== 0) showToast(`📢 LỆNH SERVER: ${notice.text}`, "info");
+                    state.lastNoticeTimestamp = notice.timestamp;
+                }
+            });
+        }
+
+        function updateDB() { if (state.user) db.ref('users/' + state.user.uid).update({ money: state.balance }); }
+        function goBack() { if(confirm("🔥 Rút lui khỏi linh địa?")) window.location.href = "index.html"; }
+        function resize() { 
+            canvas.width = canvas.parentElement.clientWidth; 
+            canvas.height = canvas.parentElement.clientHeight; 
+            initStars(); 
+            state.rocketY = canvas.height * 0.7; 
+        }
+        window.addEventListener('resize', resize);
+        function initStars() { state.stars = []; for(let i=0; i<60; i++) state.stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 1.5 + 0.5, speed: Math.random() * 2 + 0.5 }); }
+
+        function calculateCrashPoint() {
+            if (state.adminOverride !== null) {
+                const val = state.adminOverride; state.adminOverride = null;
+                adminIndicator.classList.remove('hidden'); setTimeout(() => adminIndicator.classList.add('hidden'), 3000);
+                state.lowStreak = 0;
+                return val;
+            }
+            let result = 1.00;
+            let bigWinChance = 0.05 + (state.lowStreak * 0.15); 
+            if (Math.random() < bigWinChance) {
+                result = 4.00 + (Math.random() * 26.00); 
+                state.lowStreak = 0;
+            } else {
+                if (state.highRateMode) {
+                    let r = Math.random() * 1000;
+                    if (r < 0.5) result = (Math.random() * 5000 + 1000); 
+                    else if (r < 2.5) result = (Math.random() * 450 + 50);    
+                    else if (r < 22.5) result = (Math.random() * 40 + 10);   
+                    else result = (Math.random() * 9 + 1.1);                 
+                } else {
+                    const chance = Math.random() * 100;
+                    if (chance < 15) result = 1.00;
+                    else if (chance < 70) result = 1.01 + (Math.random() * 0.69);
+                    else if (chance < 95) result = 1.70 + (Math.random() * 1.30);
+                    else result = 3.00 + (Math.random() * 5.00);
+                }
+                if (result < 2.00) state.lowStreak++;
+                else state.lowStreak = Math.max(0, state.lowStreak - 1);
+            }
+            result = result * (state.gameRatio || 1.0);
+            return Math.max(1.00, Math.floor(result * 100) / 100);
+        }
+
+        function startGlobalTimer() {
+            if (state.isWaiting || state.isFlying) return;
+            state.isWaiting = true; 
+            statusMessage.style.opacity = "1";
+            let count = 10;
+            statusMessage.innerText = `KHỞI ĐỘNG TRONG ${count}`;
+            let gameTimer = setInterval(() => { 
+                count--; 
+                if (count > 0) statusMessage.innerText = `KHỞI ĐỘNG TRONG ${count}`; 
+                else { clearInterval(gameTimer); launchRocket(); } 
+            }, 1000);
+        }
+
+        function launchRocket() {
+            state.isWaiting = false; state.isFlying = true; state.startTime = Date.now();
+            state.targetCrash = calculateCrashPoint(); 
+            statusMessage.style.opacity = "0";
+            state.bets.forEach((bet, i) => {
+                if (bet.pending) { 
+                    bet.active = true; bet.pending = false; 
+                    const autoInp = parseFloat(document.getElementById(`auto-input-${i}`).value);
+                    bet.autoValue = (bet.autoEnabled && !isNaN(autoInp) && autoInp >= 1.5) ? autoInp : 0;
+                    updateButtonState(i, 'active'); 
+                    if (document.getElementById(`profit-${i+1}`)) document.getElementById(`profit-${i+1}`).classList.remove('hidden'); 
+                } else { updateButtonState(i, 'disabled'); }
+            });
+        }
+
+        function crash() {
+            state.isFlying = false; state.crashed = true;
+            document.getElementById('game-container').classList.add('crash-shake');
+            multiplierDisplay.classList.add('text-red-500'); 
+            statusMessage.innerText = "SỤP ĐỔ!"; statusMessage.style.opacity = "1";
+            addHistory(state.multiplier); createExplosion(canvas.width / 2, state.rocketY);
+            state.bets.forEach((bet, i) => { 
+                if (bet.active && !bet.cashedOut) updateButtonState(i, 'crashed'); 
+                if (document.getElementById(`profit-${i+1}`)) document.getElementById(`profit-${i+1}`).classList.add('hidden'); 
+            });
+            setTimeout(resetGame, 3000);
+        }
+
+        function resetGame() {
+            state.isFlying = false; state.crashed = false; state.multiplier = 1.00;
+            multiplierDisplay.innerText = "1.00x"; multiplierDisplay.classList.remove('text-red-500'); statusMessage.style.opacity = "0";
+            state.bets.forEach((bet, i) => { 
+                bet.active = false; bet.cashedOut = false; 
+                if (!bet.pending) { updateButtonState(i, 'default'); } 
+                else { updateButtonState(i, 'pending'); }
+            });
+            startGlobalTimer();
+        }
+
+        function update() {
+            const speedScale = state.isFlying ? Math.min(state.multiplier, 15) : 1;
+            if (state.isFlying) {
+                const elapsed = (Date.now() - state.startTime) / 1000;
+                state.multiplier = Math.pow(Math.E, 0.07 * elapsed);
+                state.bets.forEach((bet, i) => {
+                    if (bet.active && !bet.cashedOut && bet.autoValue > 0 && state.multiplier >= bet.autoValue) { handleAction(i); }
+                });
+                if (state.multiplier >= state.targetCrash) { state.multiplier = state.targetCrash; crash(); }
+                multiplierDisplay.innerText = state.multiplier.toFixed(2) + "x";
+                state.bets.forEach((bet, i) => { 
+                    if (bet.active && !bet.cashedOut) { 
+                        const cur = Math.floor(bet.amount * state.multiplier); 
+                        if (document.getElementById(`profit-${i+1}`)) document.getElementById(`profit-${i+1}`).innerText = `Lãi: +$${formatMoney(cur)}`; 
+                    } 
+                });
+                for(let i=0; i<2; i++) state.particles.push({ x: canvas.width/2 + (Math.random()-0.5)*10, y: state.rocketY + 25, vx: (Math.random()-0.5)*2, vy: (Math.random()*5 + 5) * (speedScale * 0.4), life: 1, size: Math.random()*5 + 3, color: `hsla(${10 + Math.random()*40}, 100%, 50%, 0.8)` });
+            }
+            state.stars.forEach(s => { s.y += s.speed * (state.isFlying ? speedScale * 0.5 : 0.2); if (s.y > canvas.height) { s.y = -10; s.x = Math.random() * canvas.width; } });
+            for (let i = state.particles.length - 1; i >= 0; i--) { let p = state.particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.04; if (p.life <= 0) state.particles.splice(i, 1); }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            state.stars.forEach(s => { ctx.globalAlpha = (0.3 + (s.speed/4)) * (state.isFlying ? 0.5 : 1); ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill(); });
+            state.particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); });
+            ctx.globalAlpha = 1;
+            if (!state.crashed) { 
+                ctx.save(); ctx.translate(canvas.width / 2, state.rocketY); 
+                if (state.isFlying) { const s = Math.min(2, state.multiplier / 10); ctx.translate((Math.random()-0.5)*s, (Math.random()-0.5)*s); } 
+                ctx.font = "60px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.rotate(-Math.PI / 4); ctx.shadowBlur = 20; ctx.shadowColor = "rgba(168, 85, 247, 0.6)"; ctx.fillText("🚀", 0, 0); ctx.restore(); 
+            }
+        }
+
+        function createExplosion(x, y) { for(let i=0; i<40; i++) state.particles.push({ x: x, y: y, vx: (Math.random()-0.5)*30, vy: (Math.random()-0.5)*30, life: 1.5, size: Math.random()*8 + 2, color: i % 2 === 0 ? "#ef4444" : "#f59e0b" }); }
+        
+        function updateUI() { 
+            balanceDisplay.innerText = formatMoney(state.balance); 
+            state.bets.forEach((bet, i) => { if (!bet.active && !bet.pending && !bet.cashedOut) { updateButtonState(i, 'default'); } });
+        }
+
+        function addHistory(val) { 
+            const item = document.createElement('div'); 
+            item.className = `px-3 py-1 rounded-lg text-[10px] font-orbitron font-bold border ${val < 2 ? 'text-gray-500 border-gray-800' : 'text-purple-400 border-purple-500/30'} flex-shrink-0`; 
+            item.innerText = val.toFixed(2) + 'x'; 
+            historyContainer.prepend(item); 
+            if (historyContainer.children.length > 20) historyContainer.lastChild.remove(); 
+        }
+
+        function showToast(text, type) { 
+            const container = document.getElementById('toast-container'); 
+            const toast = document.createElement('div'); 
+            const colorClass = type === 'success' ? 'bg-green-600' : (type === 'info' ? 'bg-blue-600' : 'bg-red-600');
+            toast.className = `${colorClass} text-white px-5 py-2.5 rounded-2xl shadow-xl font-bold text-[11px] mb-2 animate-bounce border border-white/20 backdrop-blur-sm pointer-events-none`; 
+            toast.innerHTML = text; container.appendChild(toast); 
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 5000); 
+        }
+
+        function adjustBet(i, factor) {
+            const input = document.getElementById(`bet-input-${i}`);
+            if (state.bets[i].pending || (state.bets[i].active && !state.crashed)) return;
+            let newVal = Math.floor((parseFloat(input.value) || 0) * factor);
+            if (factor > 1 && newVal > state.balance) newVal = state.balance;
+            if(newVal < 100000 && state.balance >= 100000) newVal = 100000;
+            else if (newVal < 100000 && state.balance < 100000) newVal = state.balance;
+            input.value = newVal; formatLabel(i);
+        }
+
+        function toggleAuto(i) {
+            const bet = state.bets[i];
+            const btn = document.getElementById(`auto-btn-${i}`);
+            const input = document.getElementById(`auto-input-${i}`);
+            if (!bet.autoEnabled) {
+                const val = parseFloat(input.value);
+                if (isNaN(val) || val < 1.5) { showToast("Tự động rút phải ≥ 1.5x", "error"); return; }
+                bet.autoEnabled = true; btn.innerText = "Tắt";
+                btn.className = "bg-red-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-red-500 transition-colors uppercase whitespace-nowrap";
+                showToast("Đã kích hoạt tự động rút", "success");
+            } else {
+                bet.autoEnabled = false; btn.innerText = "Bật";
+                btn.className = "bg-green-600 text-[8px] px-1.5 py-0.5 rounded font-bold hover:bg-green-500 transition-colors uppercase whitespace-nowrap";
+                showToast("Đã tắt tự động rút", "info");
+            }
+        }
+
+        function handleAction(index) {
+            const bet = state.bets[index];
+            if (state.isFlying && bet.active && !bet.cashedOut && !state.crashed) {
+                const win = Math.floor(bet.amount * state.multiplier);
+                state.balance += win; bet.cashedOut = true; updateDB(); updateUI();
+                updateButtonState(index, 'cashed'); 
+                showToast(`+$${formatMoney(win)}`, "success");
+                if (document.getElementById(`profit-${index+1}`)) document.getElementById(`profit-${index+1}`).classList.add('hidden'); 
+                return;
+            }
+            if (bet.pending) {
+                state.balance += bet.amount; bet.pending = false; bet.amount = 0;
+                updateDB(); updateUI(); updateButtonState(index, 'default'); 
+                showToast("Đã hủy cược ván sau", "info"); return;
+            }
+            if (!bet.active && !bet.pending) {
+                const amount = parseFloat(document.getElementById(`bet-input-${index}`).value);
+                if (isNaN(amount) || amount < 100000) return showToast("Min cược 100k!", "error");
+                if (amount > state.balance) return showToast("Linh thạch không đủ!", "error");
+                state.balance -= amount; bet.amount = amount; bet.pending = true;
+                updateDB(); updateUI(); updateButtonState(index, 'pending');
+                if (state.isFlying) { showToast("Đã đặt cược cho ván tới!", "info"); }
+            }
+        }
+
+        function updateButtonState(i, status) {
+            const btn = document.getElementById(`btn-${i}`);
+            if (!btn) return;
+            if (status === 'default') { 
+                btn.className = "w-full h-9 bg-purple-600 rounded-xl font-bold text-[11px] btn-touch text-white flex flex-col items-center justify-center shadow-lg uppercase"; 
+                btn.innerHTML = (state.isFlying || state.crashed) ? "VÁN SAU" : "CƯỢC"; 
+                btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+            else if (status === 'pending') { 
+                btn.className = "w-full h-9 bg-red-600 rounded-xl font-bold text-[11px] text-white flex flex-col items-center justify-center shadow-inner uppercase btn-touch"; 
+                btn.innerHTML = "HỦY"; btn.disabled = false;
+            }
+            else if (status === 'active') { 
+                btn.className = "w-full h-9 bg-orange-500 rounded-xl font-bold text-[11px] text-white flex flex-col items-center justify-center btn-touch shadow-lg uppercase"; 
+                btn.innerHTML = "RÚT"; btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+            else if (status === 'cashed' || status === 'crashed') { 
+                btn.className = "w-full h-9 bg-gray-800 rounded-xl font-bold text-[11px] text-gray-500 border border-gray-700 flex flex-col items-center justify-center uppercase"; 
+                btn.innerHTML = status === 'cashed' ? "XONG" : "THUA"; btn.disabled = true; 
+            }
+            else if (status === 'disabled') { btn.disabled = true; btn.classList.add('opacity-50'); }
+        }
+
+        function toggleAdminPanel() { document.getElementById('admin-modal').classList.toggle('hidden'); }
+        function setAdminResult() { const val = parseFloat(document.getElementById('admin-next-result').value); if (val >= 1) { state.adminOverride = val; showToast(`Xác lập: ${val}x`, "success"); toggleAdminPanel(); } }
+        function forceCrashNow() { if (state.isFlying) { state.targetCrash = state.multiplier; toggleAdminPanel(); } }
+        function clearAllHistory() { historyContainer.innerHTML = ""; showToast("Xóa lịch sử thành công!", "success"); }
+        function sendGlobalNotice() { const input = document.getElementById('admin-notice-input'); const msg = input.value.trim(); if(msg) db.ref('server/notice').set({ text: msg, timestamp: Date.now() }).then(() => { showToast("Đã phát lệnh!", "success"); input.value = ""; }); }
+        function setGameRatio() { const val = parseFloat(document.getElementById('admin-ratio-input').value); if (!isNaN(val) && val > 0) { state.gameRatio = val; showToast(`Hệ số: ${val}x`, "success"); } }
+        function toggleHighRate() { state.highRateMode = !state.highRateMode; document.getElementById('high-rate-status').innerText = state.highRateMode ? "BẬT" : "TẮT"; showToast(state.highRateMode ? "Bật tỉ lệ cao!" : "Tắt tỉ lệ cao.", state.highRateMode ? "success" : "error"); }
+        window.onload = () => { resize(); const loop = () => { update(); draw(); requestAnimationFrame(loop); }; loop(); };
+    </script>
 </body>
 </html>
