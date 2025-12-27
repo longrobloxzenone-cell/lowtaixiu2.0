@@ -146,7 +146,7 @@ let userData = null, isServerLocked = false, inputCache = {}, gameMaintStatus = 
  */
 function formatMoney(n) {
     let num = Number(n);
-    if (num >= 500000000000000) return "∞ ";
+    if (num >= 1000000000000000) return "∞ ";
     if (num >= 1000000000000) return (num / 1000000000000).toFixed(1) + "T";
     if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -336,7 +336,7 @@ auth.onAuthStateChanged(user => {
             const arr = Object.keys(data).map(id => ({id, ...data[id]})).sort((a,b) => b.money - a.money);
             let h10 = ""; arr.slice(0, 10).forEach((u, i) => {
                 let m = u.money, title = "Phàm Nhân", color = "#aaa", cls = "";
-                if (m >= 500000000000000) { title = "Tiên Tôn"; color = "#fff"; cls = "rank-vocuc-item"; }
+                if (m >= 1000000000000000) { title = "Tiên Tôn"; color = "#fff"; cls = "rank-vocuc-item"; }
                 else if (m >= 1000000000000) { title = "Đại Độ Kiếp"; color = "#ff3d00"; cls = "rank-do-kiep"; }
                 else if (m >= 500000000000) { title = "Hợp Thể"; color = "#d500f9"; cls = "rank-hop-the"; }
                 else if (m >= 10000000000) { title = "Luyện Hư"; color = "#ffea00"; cls = "rank-luyen-hu"; }
