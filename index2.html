@@ -140,11 +140,13 @@ const db = firebase.database(), auth = firebase.auth();
 let userData = null, selectedAmount = 1000, selectedChoice = null, isRolling = false, gameSettings = { isLocked: false, winRate: 20 };
 
 function formatMoney(n) {
-    if (n < 1000) return n + " $";
-    if (n < 1000000) return (n / 1000).toFixed(0) + "k";
-    if (n < 1000000000) return (n / 1000000).toFixed(1) + "M";
-    if (n < 1000000000000) return (n / 1000000000).toFixed(1) + "B";
-    return (n / 1000000000000).toFixed(2) + "T";
+    let num = Number(n);
+    if (num >= 1000000000000000) return "∞ ";
+    if (num >= 1000000000000) return (num / 1000000000000).toFixed(1) + "T";
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "k";
+    return num + " $";
 }
 
 function confirmExit() { if(confirm("Bạn có chắc chắn muốn rời sòng?")) window.location.href = 'index.html'; }
