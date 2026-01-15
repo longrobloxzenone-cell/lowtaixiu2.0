@@ -516,7 +516,7 @@ function updateGameDisplay(id, tag, maint) {
 function initGameAdminListeners() {
     ['tx', 'xdach', 'xd', 'rc'].forEach(id => {
         let curTag = 'none', curMaint = false;
-        db.ref('server/game_settings/' + id + '/tag').on('value', s => { curTag = s.val() || 'none'; const badge = document.getElementById('badge_'+id); const card = document.getElementById(id==='tx'?'btnTX':(id==='xdach'?'btnXDach':(id==='xd'?'btnXD':'btnRC'))); if(badge) { badge.className = (curTag==='hot'?'badge-hot':(curTag==='new'?'badge-new':'')); badge.innerText = (curTag==='none'?'':curTag.toUpperCase()); } if(card) card.style.order = (curTag==='hot'?'1':(curTag==='new'?'2':'3')); updateGameDisplay(id, curTag, curMaint); });
+        db.ref('server/game_settings/' + id + '/tag').on('value', t => { curTag = t.val() || 'none'; const badge = document.getElementById('badge_'+id); const card = document.getElementById(id==='tx'?'btnTX':(id==='xdach'?'btnXDach':(id==='xd'?'btnXD':'btnRC'))); if(badge) { badge.className = (curTag==='hot'?'badge-hot':(curTag==='new'?'badge-new':'')); badge.innerText = (curTag==='none'?'':curTag.toUpperCase()); } if(card) card.style.order = (curTag==='hot'?'1':(curTag==='new'?'2':'3')); updateGameDisplay(id, curTag, curMaint); });
         db.ref(getPath(id) + '/isLocked').on('value', s => { curMaint = s.val() || false; gameMaintStatus[id] = curMaint; updateGameDisplay(id, curTag, curMaint); });
     });
 }
@@ -572,6 +572,19 @@ db.ref('server').on('value', s => {
     ['tx', 'xdach', 'xd', 'rc'].forEach(id => { db.ref('server/game_settings/' + id + '/tag').once('value', t => { updateGameDisplay(id, t.val() || 'none', gameMaintStatus[id]); }); });
     const label = document.getElementById("srvStatusDisp"); if(label) { label.innerText = isServerLocked ? "SERVER: ĐANG KHÓA" : "SERVER: ĐANG MỞ"; label.style.color = isServerLocked ? "#f00" : "#0f0"; }
 });
+
+// --- HÀM MỚI BỔ SUNG: XỬ LÝ VÀO GAME ---
+function enterGame(url, gameId) {
+    if (isServerLocked) {
+        alert("Toàn bộ máy chủ đang bảo trì!");
+        return;
+    }
+    if (gameMaintStatus[gameId]) {
+        alert("Trò chơi này đang bảo trì nâng cấp!");
+        return;
+    }
+    window.location.href = url;
+}
 </script>
 </body>
 </html>
