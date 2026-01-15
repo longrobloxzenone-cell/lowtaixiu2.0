@@ -532,10 +532,40 @@ function delUser(id) { if(confirm("XÓA?")) db.ref('users/'+id).remove(); }
 function toggleAD(id, c) { db.ref('users/'+id).update({ isAdmin: !c }); }
 
 function register() {
-    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim(); if (u.length < 5 || p.length < 6) { showStatus("QUÁ NGẮN!", true); return; }
-    auth.createUserWithEmailAndPassword(u + "@casino.com", p).then(r => { db.ref('users/' + r.user.uid).set({ username: u, money: 1000000, iron: 0, gold: 0, vipPoints: 0, mineCount: 0, isAdmin: false, isSuperAdmin: false }); });
+    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
+    const stBox = document.getElementById("logStatusText");
+    if (u.length < 5 || u.length > 15) { stBox.innerText = "DANH TÁNH PHẢI TỪ 5 ĐẾN 15 KÝ TỰ!"; return; }
+    if (p.length < 6) { stBox.innerText = "MẬT CHỈ PHẢI CÓ ÍT NHẤT 6 KÝ TỰ!"; return; }
+    stBox.innerText = "KHAI MỞ DANH TÁNH TRÊN TIÊN BẢNG...";
+    auth.createUserWithEmailAndPassword(u + "@casino.com", p)
+    .then(r => {
+        stBox.innerText = "DANH TÁNH ĐÃ ĐƯỢC KHẮC GHI - THÀNH CÔNG!";
+        return db.ref('users/' + r.user.uid).set({ username: u, money: 1000000, isAdmin: false, isSuperAdmin: false });
+    })
+    .catch(e => { stBox.innerText = e.code === 'auth/email-already-in-use' ? "DANH TÁNH NÀY ĐÃ ĐƯỢC CHỦ NHÂN KHÁC CHIẾM HỮU!" : "THIÊN ĐẠO TRỤC TRẶC - LỖI KHỞI TẠO!"; });
 }
-function login() { const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim(); auth.signInWithEmailAndPassword(u + "@casino.com", p); }
+
+function login() { 
+    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
+    const stBox = document.getElementById("logStatusText");
+    stBox.innerText = "TRUY QUÉT THẦN THỨC - ĐANG XÁC THỰC...";
+    auth.signInWithEmailAndPassword(u + "@casino.com", p).catch(() => { stBox.innerText = "MẬT CHỈ SAI LỆCH - TRUY CẬP BỊ TỪ CHỐI!"; });
+}
+
+// Trong hàm onAuthStateChanged, thêm phần hiệu ứng delay này ở nhánh 'else' (chưa login)
+auth.onAuthStateChanged(user => {
+    const stBox = document.getElementById("logStatusText");
+    const aForm = document.getElementById("authForm");
+    if (user) {
+        // ... (Giữ nguyên toàn bộ logic xử lý khi đã login của Code 1)
+    } else {
+        stBox.innerText = "ĐANG KHỞI TẠO LIÊN KẾT ĐẾ CHẾ...";
+        setTimeout(() => { 
+            stBox.innerText = "LINH KHÍ QUY TỤ - KẾT NỐI THÀNH CÔNG!"; 
+            aForm.style.display = "block"; 
+        }, 1500);
+    }
+});
 
 db.ref('server').on('value', s => {
     isServerLocked = s.val()?.isLocked || false; document.getElementById("lockBanner").style.display = isServerLocked ? "block" : "none"; document.getElementById("marqueeText").innerText = s.val()?.notice || "";
