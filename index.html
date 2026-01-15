@@ -2,13 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Royal Casino - V149 Master Lobby</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
-        /* GIỮ NGUYÊN 100% CSS TỪ CÁC PHIÊN BẢN TRƯỚC - KHÔNG LƯỢC BỎ */
+        /* GIỮ NGUYÊN 100% CSS TỪ PHIÊN BẢN TRƯỚC */
         * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); outline: none; margin: 0; padding: 0; }
         html, body { background-color: #000; background-image: radial-gradient(circle at 50% 50%, #4a0000 0%, #2a0000 45%, #000 100%); background-attachment: fixed; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; min-height: 100vh; }
         #loginPanel, #lobbyPanel { width: 100%; max-width: 500px; margin: 0 auto; padding: 25px 20px; }
@@ -20,9 +20,9 @@
         .sad-input { width: 100%; padding: 20px; background-color: #050505; border: 1px solid #333; color: #fff; border-radius: 20px; margin-bottom: 15px; font-size: 16px; }
         .btn-main { width: 100%; padding: 24px; background-image: linear-gradient(135deg, #ffd700 0%, #b8860b 100%); color: #000; font-weight: 900; font-size: 20px; border-radius: 20px; border: none; cursor: pointer; text-transform: uppercase; }
         
-        .marquee-box { width: 100%; background: rgba(255, 215, 0, 0.08); border: 1px solid rgba(255, 215, 0, 0.25); border-radius: 20px; padding: 14px 0; margin-bottom: 25px; overflow: hidden; }
-        .marquee-text { display: inline-block; white-space: nowrap; color: #ffd700; font-size: 15px; font-weight: 900; animation: marquee-run 16s linear infinite; }
-        @keyframes marquee-run { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .marquee-box { width: 100%; background: rgba(255, 215, 0, 0.08); border: 1px solid rgba(255, 215, 0, 0.25); border-radius: 20px; padding: 14px 0; margin-bottom: 25px; overflow: hidden; position: relative; }
+        .marquee-text { display: inline-block; white-space: nowrap; color: #ffd700; font-size: 15px; font-weight: 900; animation: marquee-run 15s linear infinite; padding-left: 100%; }
+        @keyframes marquee-run { 0% { transform: translateX(0); } 100% { transform: translateX(-150%); } }
         
         #lockBanner { background: linear-gradient(to right, #b71c1c, #ff0000); color: #fff; padding: 18px; text-align: center; font-weight: 900; border-radius: 25px; border: 2px solid #fff; margin-bottom: 25px; display: none; box-shadow: 0 0 30px rgba(255,0,0,0.6); }
         
@@ -40,16 +40,29 @@
         
         .slogan-ultimate { color: #999; font-size: 3.2vw; max-font-size: 13px; margin-top: 15px; font-style: italic; font-weight: 800; white-space: nowrap; display: block; width: 100%; text-transform: uppercase; }
         
+        /* ADMIN PANEL CSS */
         .sad-dashboard { background: rgba(0, 0, 0, 0.99); border: 2px solid #ff0000; border-radius: 50px; padding: 30px 15px; margin-top: 40px; margin-bottom: 100px; box-shadow: 0 0 50px rgba(255,0,0,0.5); display: none; }
         .user-item-card { background: rgba(255, 255, 255, 0.02); padding: 18px; border-radius: 25px; margin-bottom: 15px; border: 1px solid #222; }
-        .control-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
+        .control-grid { display: grid; grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr 0.8fr; gap: 6px; margin-top: 12px; }
         .btn-mini { height: 42px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; text-transform: uppercase; }
-        .role-badge { font-size: 9px; padding: 4px 10px; border-radius: 6px; font-weight: 900; text-transform: uppercase; margin-left: 10px; display: inline-block; }
+        .role-badge { font-size: 9px; padding: 4px 10px; border-radius: 6px; font-weight: 900; text-transform: uppercase; display: inline-block; }
         .role-sad { background: #f00; color: #fff; border: 1px solid #fff; }
         .role-ad { background: #ffd700; color: #000; }
         .role-mem { background: #2196f3; color: #fff; }
         .admin-tag-stt { font-size: 11px; color: #ffd700; display: block; margin-bottom: 8px; font-weight: 900; text-transform: uppercase; }
         .btn-tag-cmd { flex: 1; height: 35px; border-radius: 8px; border: none; font-size: 9px; font-weight: 900; color: #fff; cursor: pointer; }
+
+        /* --- PHÂN CẤP HIỆU ỨNG RAINBOW --- */
+        @keyframes move-rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        @keyframes move-rainbow-infinite { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+        @keyframes flash-rank { 0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px #fff); } 50% { opacity: 0.7; filter: drop-shadow(0 0 25px #ffd700); } }
+
+        .effect-rank-1 { background: linear-gradient(to right, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; background-size: 200% auto !important; animation: move-rainbow-infinite 0.8s linear infinite, flash-rank 0.4s ease-in-out infinite !important; font-weight: 900 !important; }
+        .badge-rank-1 { background: linear-gradient(-45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8) !important; background-size: 300% 300% !important; animation: move-rainbow-infinite 1s linear infinite, glowVoCuc 2s ease infinite !important; border: 2px solid #fff !important; color: #fff !important; font-weight: 900 !important; }
+        .effect-rank-2 { background: linear-gradient(to right, #d500f9, #ff00c8, #00e5ff, #ffd700, #d500f9); -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; background-size: 400% !important; animation: move-rainbow 3s linear infinite !important; }
+        .badge-rank-2 { background: linear-gradient(135deg, #d500f9, #ff00c8, #00e5ff) !important; box-shadow: 0 0 15px #d500f9 !important; color: #fff !important; border: 1px solid #fff !important; font-weight: 900 !important; }
+        .effect-rank-3 { background: linear-gradient(to right, #ffd700, #ff8c00, #ff0000, #ff8c00, #ffd700); -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; background-size: 400% !important; animation: move-rainbow 5s linear infinite !important; }
+        .badge-rank-3 { background: linear-gradient(135deg, #ffd700, #ff8c00, #ff0000) !important; box-shadow: 0 0 10px #ffd700 !important; color: #000 !important; border: 1px solid #fff !important; font-weight: 900 !important; }
 
         @keyframes glowVoCuc { 0% { background-position: 0% 50%; box-shadow: 0 0 10px #ff0000; } 50% { background-position: 100% 50%; box-shadow: 0 0 30px #00ff00; } 100% { background-position: 0% 50%; box-shadow: 0 0 10px #ff0000; } }
         @keyframes glowRed { 0%, 100% { box-shadow: inset 0 0 5px #ff3d00, 0 0 5px #ff3d00; } 50% { box-shadow: inset 0 0 15px #ff3d00, 0 0 15px #ff3d00; } }
@@ -58,7 +71,7 @@
         @keyframes glowGreen { 0%, 100% { box-shadow: inset 0 0 5px #00e676, 0 0 5px #00e676; } 50% { box-shadow: inset 0 0 15px #00e676, 0 0 15px #00e676; } }
         @keyframes glowBlue { 0%, 100% { box-shadow: inset 0 0 5px #00e5ff, 0 0 5px #00e5ff; } 50% { box-shadow: inset 0 0 15px #00e5ff, 0 0 15px #00e5ff; } }
 
-        .rank-vocuc-item { background: linear-gradient(-45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8); background-size: 400% 400%; animation: glowVoCuc 3s ease infinite; border: 2px solid #fff !important; transform: scale(1.03); z-index: 10; }
+        .rank-vocuc-item { background: linear-gradient(-45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8); background-size: 400% 400%; animation: move-rainbow-infinite 1.2s linear infinite, glowVoCuc 3s ease infinite; border: 2px solid #fff !important; transform: scale(1.03); z-index: 10; }
         .rank-vocuc-item * { color: #fff !important; text-shadow: 2px 2px 4px #000; font-weight: 900 !important; }
         .rank-do-kiep { animation: glowRed 2s infinite; border: 1px solid #ff3d00 !important; }
         .rank-hop-the { animation: glowPurple 2s infinite; border: 1px solid #d500f9 !important; }
@@ -66,9 +79,114 @@
         .rank-hoa-than { animation: glowGreen 3s infinite; border: 1px solid #00e676 !important; }
         .rank-nguyen-anh { animation: glowBlue 3s infinite; border: 1px solid #00e5ff !important; }
         .tu-vi-tag { font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 5px; margin-top: 5px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* MENU */
+        .menu-trigger { position: fixed; top: 15px; right: 15px; z-index: 2000; cursor: pointer; background: rgba(255, 215, 0, 0.2); padding: 8px; border-radius: 8px; border: 1px solid #ffd700; display: none; }
+        .menu-trigger div { width: 18px; height: 2px; background-color: #ffd700; margin: 4px 0; border-radius: 1px; }
+        .side-menu { position: fixed; top: 0; right: -100%; width: 85%; max-width: 350px; height: 100%; background: #0a0a0a; z-index: 3000; transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); border-left: 2px solid #ffd700; padding: 40px 20px; box-shadow: -10px 0 50px #000; overflow-y: auto; }
+        .side-menu.active { right: 0; }
+        .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; display: none; backdrop-filter: blur(5px); }
+        .nav-link { padding: 18px; border-bottom: 1px solid #222; color: #ffd700; font-weight: 900; text-transform: uppercase; cursor: pointer; font-size: 14px; }
+
+        /* ACCOUNT BOX */
+        .account-box-new { background: linear-gradient(180deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 2px solid rgba(255,215,0,0.3); border-radius: 40px; padding: 35px 25px; margin-bottom: 30px; text-align: center; }
+        .acc-info-item { margin-bottom: 25px; }
+        .vip-badge { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; padding: 8px 20px; border-radius: 50px; font-weight: 900; font-size: 14px; margin-top: 15px; box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        .achievements-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 25px; }
+        .ach-badge { padding: 10px 15px; border-radius: 15px; font-size: 10px; font-weight: 900; text-transform: uppercase; position: relative; overflow: hidden; border: 1px solid transparent; display: none; }
+        
+        .ach-rich-1 { display: none; background: #000; border-color: #ffd700; color: #ffd700; box-shadow: 0 0 15px #ffd700; animation: pulse-rich 2s infinite; }
+        @keyframes pulse-rich { 0%, 100% { transform: scale(1); box-shadow: 0 0 15px #ffd700; } 50% { transform: scale(1.05); box-shadow: 0 0 30px #ffd700; } }
+        .ach-vip-1 { display: none; background: #000; border-color: #d500f9; color: #d500f9; box-shadow: 0 0 15px #d500f9; animation: glitch-vip 3s infinite; }
+        
+        .ach-tienton { display: none; background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important; background-size: 200% auto !important; animation: move-rainbow-infinite 0.8s linear infinite, flash-rank 0.4s ease-in-out infinite !important; color: #fff !important; border: 2px solid #fff !important; box-shadow: 0 0 25px #ffd700 !important; font-weight: 900 !important; }
+        .ach-rich-sub { background: rgba(255, 215, 0, 0.1); border: 1px solid #ffd700; color: #ffd700; display: none; }
+        .ach-vip-sub { background: rgba(213, 0, 249, 0.1); border: 1px solid #d500f9; color: #d500f9; display: none; }
+
+        .page-header { color: #ffd700; text-align: center; margin-bottom: 30px; font-size: 24px; font-weight: 900; border-bottom: 2px solid #ffd700; padding-bottom: 15px; text-transform: uppercase; }
+        .tab-box { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; padding: 15px; background: #111; color: #888; border-radius: 15px; font-weight: 900; cursor: pointer; border: 1px solid #333; text-transform: uppercase; }
+        .tab-btn.active { background: #ffd700; color: #000; }
+
+        .lobby-header-user { text-align: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 15px; }
+        .lobby-header-user .role-badge { margin-bottom: 5px; }
+        .lobby-header-user .name-txt { color: #ffd700; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+
+        .btn-new-mystery { order: 99 !important; filter: grayscale(1) opacity(0.6); border: 2px dashed rgba(255,215,0,0.2) !important; cursor: default !important; background: rgba(20,20,20,0.8) !important; }
+        .btn-new-mystery h3 { color: #555 !important; }
+
+        #congratModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .congrat-box { background: #111; border: 2px solid #ffd700; padding: 40px; border-radius: 30px; box-shadow: 0 0 100px rgba(255,215,0,0.3); animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes zoomIn { from { transform: scale(0); } to { transform: scale(1); } }
+        .congrat-box h2 { color: #ffd700; font-size: 28px; margin-bottom: 15px; }
+        .congrat-box p { font-size: 18px; margin-bottom: 30px; color: #fff; line-height: 1.6; }
+        .btn-close-congrat { background: #ffd700; color: #000; border: none; padding: 15px 40px; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+
+        /* MARKET UI */
+        #marketPanel { display: none; padding: 25px 20px; width: 100%; max-width: 500px; margin: 0 auto; }
+        .afk-mining-panel { background: rgba(255, 215, 0, 0.05); border: 2px dashed #ffd700; border-radius: 30px; padding: 20px; margin-bottom: 30px; text-align: center; }
+        .trash-box { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, #ff0000, #b71c1c); color: #fff; padding: 15px 25px; border-radius: 50px; font-weight: 900; border: 2px solid #fff; cursor: pointer; z-index: 9999; display: none; box-shadow: 0 0 30px #ff0000; animation: bounceTrash 0.5s infinite alternate; }
+        @keyframes bounceTrash { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(-20px); } }
+        .craft-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .craft-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 20px; padding: 15px; text-align: center; transition: 0.3s; }
+        .inv-row { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .inv-slot { background: #222; border: 1px solid #444; padding: 8px 15px; border-radius: 10px; font-size: 11px; }
+
+        .btn-play-soon { order: 100 !important; filter: grayscale(1) brightness(0.4); opacity: 0.6; cursor: not-allowed !important; border: 2px dashed #444 !important; background: rgba(20,20,20,0.9) !important; pointer-events: none; }
+        .btn-play-soon h3 { color: #555 !important; }
+
+        /* DAILY PANEL */
+        #dailyPanel { display: none; padding: 25px 20px; width: 100%; max-width: 500px; margin: 0 auto; text-align: center; }
+        .daily-card { background: rgba(255, 215, 0, 0.05); border: 2px solid #ffd700; border-radius: 40px; padding: 40px 20px; box-shadow: 0 0 30px rgba(255,215,0,0.1); }
+        .gift-box-container { margin: 30px 0; font-size: 80px; cursor: pointer; transition: 0.3s; }
+        .gift-box-container:hover { transform: scale(1.1); }
+        .gift-opening { animation: gift-shake 0.5s infinite; }
+        @keyframes gift-shake { 0% { transform: rotate(0); } 25% { transform: rotate(5deg); } 50% { transform: rotate(0); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0); } }
+        .reward-text { color: #ffd700; font-size: 24px; font-weight: 900; margin-top: 20px; display: none; }
+
+        /* CRAFT MODAL */
+        #craftPriceModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .price-box { background: #111; border: 2px solid #ffd700; padding: 30px; border-radius: 30px; width: 100%; max-width: 400px; text-align: center; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;"> 
+
+<div id="congratModal">
+    <div class="congrat-box">
+        <h2 id="congratTitle">CHÚC MỪNG!</h2>
+        <p id="congratMsg">Bạn đã nhận được danh hiệu...</p>
+        <button class="btn-close-congrat" onclick="closeCongrat()">XÁC NHẬN</button>
+    </div>
+</div>
+
+<div id="craftPriceModal">
+    <div class="price-box">
+        <div id="craftReviewIcon" style="font-size: 60px; margin-bottom: 10px;">🛡️</div>
+        <h3 id="craftReviewName" style="color:#ffd700; margin-bottom: 20px;">CHẾ TẠO THÀNH CÔNG</h3>
+        <p style="color:#aaa; font-size: 14px; margin-bottom: 20px;">Mời đạo hữu định giá cho vật phẩm này để bày bán lên Sàn Giao Dịch VIP:</p>
+        <input type="number" id="inputCustomPrice" class="sad-input" style="text-align: center; font-size: 22px; color: #4caf50;" placeholder="Nhập giá bán ($)">
+        <div style="display:flex; gap: 10px;">
+            <button onclick="confirmListing()" class="btn-main" style="padding: 15px; font-size: 14px;">ĐĂNG BÁN</button>
+            <button onclick="document.getElementById('craftPriceModal').style.display='none'" style="flex:1; background:#333; color:#fff; border:none; border-radius:20px; font-weight:900;">HỦY</button>
+        </div>
+    </div>
+</div>
+
+<div id="royalTrash" class="trash-box" onclick="grabTrash()">💎 NHẶT RÁC HOÀNG GIA (+5 Sắt)</div>
+
+<div id="menuTrigger" class="menu-trigger" onclick="toggleMenu(true)">
+    <div></div><div></div><div></div>
+</div>
+<div id="menuOverlay" class="menu-overlay" onclick="toggleMenu(false)"></div>
+
+<div id="sideMenu" class="side-menu">
+    <div onclick="toggleMenu(false)" style="color:#f00; text-align:right; font-weight:900; font-size:22px; margin-bottom:20px; cursor:pointer;">✕ CLOSE</div>
+    <div class="nav-link" onclick="switchPage('lobby')">🏰 Sảnh Chính</div>
+    <div class="nav-link" onclick="switchPage('daily')" style="color:#ffd700;">🎁 Điểm Danh Nhận Tiền</div>
+    <div class="nav-link" onclick="switchPage('market')" style="color:#00e676;">⚒️ Chế Tạo & Giao Dịch</div>
+    <div class="nav-link" onclick="switchPage('account')">👤 Tài Khoản</div>
+    <div class="nav-link" onclick="switchPage('bxh')">🏆 Tiên Bảng Chí Tôn</div>
+</div>
 
 <div id="loginPanel">
     <div class="login-card">
@@ -84,31 +202,33 @@
 </div>
 
 <div id="lobbyPanel" style="display:none;">
+    <div class="lobby-header-user">
+        <div id="lbRole" class="role-badge">MEMBER</div>
+        <div id="lbName" class="name-txt">--</div>
+        <div id="lbMoney" style="color: #4caf50; font-weight: 900; font-size: 16px; margin-top: 5px;">0 $</div>
+    </div>
+    
+    <div class="afk-mining-panel">
+        <div style="color:#ffd700; font-weight:900; font-size:14px; margin-bottom:10px;">⛏️ KHU KHAI THÁC AFK</div>
+        <div id="afkStatus" style="font-size:12px; color:#aaa;">Đang nghỉ ngơi...</div>
+        <div id="afkLimitLabel" style="font-size:10px; color:#666; margin-top:5px;">Giới hạn ngày: 0/50</div>
+        <button id="btnMine" onclick="startMining()" class="btn-main" style="padding:10px 20px; font-size:13px; margin-top:15px; height:auto; width:auto;">BẮT ĐẦU ĐÀO SẮT</button>
+    </div>
+
     <div class="marquee-box"><div id="marqueeText" class="marquee-text">Chào mừng quý khách đến với Royal Casino!</div></div>
     <div id="lockBanner">⚠️ MÁY CHỦ ĐANG BẢO TRÌ - TRÒ CHƠI TẠM KHÓA ⚠️</div>
 
-    <div style="padding:40px 20px; border-radius:50px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,215,0,0.3); margin-bottom:35px; text-align:center;">
-        <div id="myRankDisplay" class="role-badge">MEMBER</div>
-        <h2 id="lobbyName" style="color:#ffd700; margin-top:10px; margin-bottom:15px; font-size:30px; font-weight:900;">--</h2>
-        <div id="lobbyMoney" style="font-size:38px; color:#4caf50; font-weight:900; margin-bottom:30px;">Số dư: 0 $</div>
-        <button onclick="logout()" style="background:rgba(204,0,0,0.15); color:#ff5252; border:1px solid #ff5252; padding:15px 40px; border-radius:22px; font-weight:bold; cursor:pointer;">ĐĂNG XUẤT</button>
-    </div>
-
-    <div style="background: rgba(10, 10, 10, 0.99); border: 2px solid #ffd700; border-radius: 45px; padding: 35px 20px; margin-bottom: 40px; box-shadow: 0 0 30px rgba(255,215,0,0.1);">
-        <h3 style="color:#ffd700; text-align:center; margin-top:0; font-size:18px; border-bottom:1px solid #333; padding-bottom:22px; text-transform:uppercase; letter-spacing:3px;">🏆Tiên Bảng Chí Tôn🏆</h3>
-        <div id="top10List"></div>
-    </div>
-
     <div id="gameListContainer">
-        <div id="btnTX" onclick="enterGame('index2.html', 'tx')" class="btn-play-card"><div id="badge_tx"></div><div style="font-size:75px; margin-bottom:15px;">🎲</div><h3 id="title_tx" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">TÀI XỈU IMPERIAL</h3><span id="slogan_tx" class="slogan-ultimate">NƠI ANH HÙNG HỘI TỤ - BẢN LĨNH ĐỊNH GIANG SƠN</span></div>
-        <div id="btnXDach" onclick="enterGame('index4.html', 'xdach')" class="btn-play-card"><div id="badge_xdach"></div><div style="font-size:75px; margin-bottom:15px;">🃏</div><h3 id="title_xdach" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÌ DÁCH IMPERIAL</h3><span id="slogan_xdach" class="slogan-ultimate">TRÍ TUỆ BẬC THẦY - ĐẲNG CẤP QUÂN BÀI</span></div>
-        <div id="btnXD" onclick="enterGame('index3.html', 'xd')" class="btn-play-card"><div id="badge_xd"></div><div style="font-size:75px; margin-bottom:15px;">⚪🔴</div><h3 id="title_xd" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÓC ĐĨA IMPERIAL</h3><span id="slogan_xd" class="slogan-ultimate">HUYỀN THOẠI ĐẾ CHẾ - UY CHẤN SERVER</span></div>
-        <div id="btnRC" onclick="enterGame('index5.html', 'rc')" class="btn-play-card"><div id="badge_rc"></div><div style="font-size:75px; margin-bottom:15px;">🚀</div><h3 id="title_rc" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">ROCKET CRASH</h3><span id="slogan_rc" class="slogan-ultimate">PHI THUYỀN TỐC ĐỘ - TOẠ ĐỘ LÀM GIÀU</span></div>
-        <div id="btnSoon" class="btn-play-card" style="opacity: 0.6; cursor: default; filter: grayscale(1); order: 999;">
-            <div class="badge-soon">COMING SOON</div>
-            <div style="font-size:75px; margin-bottom:15px;">💎</div>
-            <h3 style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">BACCARAT ROYAL</h3>
-            <span class="slogan-ultimate">SẮP RA MẮT - ĐÓN CHỜ TRẢI NGHIỆM MỚI</span>
+        <div id="btnTX" onclick="enterGame('index2.html', 'tx')" class="btn-play-card"><div id="badge_tx"></div><div style="font-size:75px; margin-bottom:15px;">🎲</div><h3 id="title_tx" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">TÀI XỈU IMPERIAL</h3><span class="slogan-ultimate">NƠI ANH HÙNG HỘI TỤ - BẢN LĨNH ĐỊNH GIANG SƠN</span></div>
+        <div id="btnXDach" onclick="enterGame('index4.html', 'xdach')" class="btn-play-card"><div id="badge_xdach"></div><div style="font-size:75px; margin-bottom:15px;">🃏</div><h3 id="title_xdach" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÌ DÁCH Master</h3><span class="slogan-ultimate">TRÍ TUỆ BẬC THẦY - Đ đẳng CẤP QUÂN BÀI</span></div>
+        <div id="btnXD" onclick="enterGame('index3.html', 'xd')" class="btn-play-card"><div id="badge_xd"></div><div style="font-size:75px; margin-bottom:15px;">⚪🔴</div><h3 id="title_xd" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">XÓC ĐĨA Royal</h3><span class="slogan-ultimate">HUYỀN THOẠI ĐẾ CHẾ - UY CHẤN SERVER</span></div>
+        <div id="btnRC" onclick="enterGame('index5.html', 'rc')" class="btn-play-card"><div id="badge_rc"></div><div style="font-size:75px; margin-bottom:15px;">🚀</div><h3 id="title_rc" style="color: #ffd700; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">ROCKET CRASH</h3><span class="slogan-ultimate">PHI THUYỀN TỐC ĐỘ - TOẠ ĐỘ LÀM GIÀU</span></div>
+        
+        <div class="btn-play-card btn-play-soon">
+            <div class="badge-soon">SOON</div>
+            <div style="font-size:75px; margin-bottom:15px;">🏰</div>
+            <h3 style="color: #555; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 3px;">BẦU CUA ROYAL</h3>
+            <span class="slogan-ultimate">COMING SOON - ĐANG PHÁT TRIỂN</span>
         </div>
     </div>
 
@@ -126,260 +246,302 @@
         <div style="background: rgba(255,255,255,0.03); padding: 30px 20px; border-radius: 35px; border: 1px solid #333; margin-bottom: 35px;">
             <div id="srvStatusDisp" style="text-align:center; font-size:12px; font-weight:900; padding:12px; border-radius:15px; margin-bottom:20px; text-transform:uppercase;">SERVER: --</div>
             <div style="display:flex; gap:10px; margin-bottom:20px;"><button onclick="srvLock(true)" class="btn-mini" style="flex:1; height:50px; background:#b71c1c;">KHÓA MÁY</button><button onclick="srvLock(false)" class="btn-mini" style="flex:1; height:50px; background:#2e7d32;">MỞ MÁY</button></div>
-            <input type="text" id="newNotice" class="sad-input" style="font-size:14px;" placeholder="Thông báo mới..."><button onclick="updateNotice()" style="width:100%; background:#1565c0; color:#fff; border:none; padding:20px; border-radius:20px; font-weight:bold;">CẬP NHẬT TOÀN SERVER</button>
+            <input type="text" id="newNotice" class="sad-input" style="font-size:14px;" placeholder="Thông báo mới..."><button onclick="updateNotice()" style="width:100%; background:#1565c0; color:#fff; border:none; padding:20px; border-radius:20px; font-weight:bold;">CẬP NHẬT NOTICE</button>
         </div>
         <div id="masterUserList"></div>
     </div>
 </div>
 
+<div id="accountPanel" style="display:none;">
+    <h2 class="page-header">Hồ Sơ Đạo Hữu</h2>
+    <div class="account-box-new">
+        <div class="acc-info-item"><b id="accNameDisplay" style="color:#ffd700; font-size:32px; font-weight:900; letter-spacing:2px;">--</b></div>
+        <div class="acc-info-item"><div id="accRoleBadge" class="role-badge" style="margin-left:0; padding:8px 20px; font-size:11px;">MEMBER</div></div>
+        <div class="acc-info-item"><div id="accTuViTag" class="tu-vi-tag" style="font-size:13px; padding:5px 15px;">-</div></div>
+        <div id="vip-container" style="display:none;"><div class="vip-badge"><span class="vip-icon">👑</span> Cấp VIP <span id="vip-level-num">1</span></div></div>
+        <div id="ach-list" class="achievements-container">
+            <div id="ach_tienton" class="ach-badge ach-tienton">Vô Cực Tiên Tôn</div>
+            <div id="ach_rich_1" class="ach-badge ach-rich-1 badge-rank-3">Chí Tôn Đại Gia</div>
+            <div id="ach_rich_2" class="ach-badge ach-rich-sub">Nhị Cấp Hào Phú</div>
+            <div id="ach_vip_1" class="ach-badge ach-vip-1 badge-rank-2">Đệ Nhất VIP</div>
+        </div>
+        <div style="margin-top:35px;"><div id="accMoneyDisplay" style="font-size:34px; color:#4caf50; font-weight:900;">Số dư: 0 $</div></div>
+        <button onclick="logout()" style="background:rgba(255,0,0,0.1); border:2px solid #f00; color:#f00; width:100%; padding:18px; border-radius:25px; font-weight:900; margin-top:40px; cursor:pointer; text-transform:uppercase;">🚪 Đăng Xuất</button>
+    </div>
+</div>
+
+<div id="bxhPanel" style="display:none;">
+    <h2 class="page-header">🏆 TIÊN BẢNG CHÍ TÔN 🏆</h2>
+    <div class="tab-box"><button id="tabRich" class="tab-btn active" onclick="switchBXH('rich')">ĐẠI GIA</button><button id="tabVip" class="tab-btn" onclick="switchBXH('vip')">TOP VIP</button></div>
+    <div id="top10List"></div>
+</div>
+
+<div id="marketPanel" style="display:none;">
+    <h2 class="page-header">⚒️ CHẾ TẠO & CHỢ ĐỒ CỔ</h2>
+    <div class="inv-row" id="marketInventory"></div>
+    <div style="color:#ffd700; font-weight:900; font-size:15px;">🛠️ XƯỞNG ĐÚC ĐỒ</div>
+    <div class="craft-grid" id="craftRecipesArea"></div>
+    <div style="color:#ffd700; font-weight:900; font-size:15px; margin-top:40px; border-top:1px solid #333; padding-top:20px;">🏪 SÀN GIAO DỊCH VIP</div>
+    <div id="marketListArea" style="margin-top:15px;"></div>
+</div>
+
+<div id="dailyPanel">
+    <h2 class="page-header">🎁 QUÀ TẶNG MỖI NGÀY</h2>
+    <div class="daily-card">
+        <div id="dailyStatus" style="color:#aaa; margin-bottom:15px; font-weight:bold;">Mỗi ngày đạo hữu có 1 lượt nhận tiền thưởng ngẫu nhiên.</div>
+        <div id="giftBox" class="gift-box-container" onclick="claimDaily()">🎁</div>
+        <div id="rewardMsg" class="reward-text"></div>
+        <button id="btnDailyBack" onclick="switchPage('lobby')" class="btn-main" style="display:none; margin-top:20px; font-size:14px; padding:15px;">QUAY LẠI SẢNH CHÍNH</button>
+    </div>
+</div>
+
 <script>
-/** * FIREBASE CONFIGURATION & INITIALIZATION 
- * Giữ nguyên các thông tin kết nối và biến toàn cục của Sảnh 3
- */
+window.addEventListener('keydown', function(e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) { e.preventDefault(); return false; } });
+
 const firebaseConfig = { apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", authDomain: "tx888-85658.firebaseapp.com", databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", projectId: "tx888-85658", storageBucket: "tx888-85658.firebasestorage.app", messagingSenderId: "246211516842", appId: "1:246211516842:web:24a3598d54b037676c73d3" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database(), auth = firebase.auth();
-let userData = null, isServerLocked = false, inputCache = {}, gameMaintStatus = {};
+let userData = null, isServerLocked = false, inputCache = {}, gameMaintStatus = {}, currentBXH = 'rich';
+let lastRichRank = -1, lastVipRank = -1, lastIsTienTon = false;
+let pendingCongrats = [];
 
-/**
- * HÀM ĐỊNH DẠNG TIỀN TỆ (MONEY FORMATTER)
- */
-function formatMoney(n) {
-    let num = Number(n);
-    if (num >= 1000000000000000) return "∞ ";
-    if (num >= 1000000000000) return (num / 1000000000000).toFixed(1) + "T";
-    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "k";
-    return num + " $";
+// BIẾN TẠM ĐỂ LƯU DỮ LIỆU CHẾ TẠO KHI CHỜ ĐỊNH GIÁ
+let currentCraftingItem = null;
+
+// CẬP NHẬT RECIPES MỚI THEO YÊU CẦU
+const RECIPES = [
+    { id: 'v_card', name: 'Lệnh Bài VIP', iron: 10, gold: 1, rewardVip: 50, defaultPrice: 500000, img: '🎖️' },
+    { id: 'v_gem', name: 'Ngọc Lục Bảo', iron: 5, gold: 0, rewardVip: 10, defaultPrice: 100000, img: '💎' },
+    { id: 'v_crown', name: 'Thiên Vương Miện', iron: 20, gold: 15, rewardVip: 2000, defaultPrice: 15000000, img: '👑' }, // Tăng tỉ lệ & thưởng
+    { id: 'v_sword', name: 'Thần Binh EX', iron: 50, gold: 5, rewardVip: 5000, defaultPrice: 30000000, img: '⚔️' } // Thêm món mới
+];
+
+function closeCongrat() { document.getElementById("congratModal").style.display = "none"; if (pendingCongrats.length > 0) { const next = pendingCongrats.shift(); setTimeout(() => showCongrat(next.title, next.msg, true), 300); } }
+function showCongrat(title, msg, isNext = false) { if (document.getElementById("congratModal").style.display === "flex" && !isNext) { pendingCongrats.push({title, msg}); return; } document.getElementById("congratTitle").innerText = title; document.getElementById("congratMsg").innerHTML = msg; document.getElementById("congratModal").style.display = "flex"; }
+function showStatus(msg, isError = false) { const el = document.getElementById("logStatusText"); if(!el) return; el.innerText = msg; el.style.color = isError ? "#ff0000" : "#ffd700"; }
+function formatMoney(n) { let num = Number(n); if (num >= 1e15) return "∞ "; if (num >= 1e12) return (num / 1e12).toFixed(1) + "T"; if (num >= 1e9) return (num / 1e9).toFixed(1) + "B"; if (num >= 1e6) return (num / 1e6).toFixed(1) + "M"; if (num >= 1e3) return (num / 1e3).toFixed(1) + "k"; return num.toLocaleString(); }
+
+function getRank(m) {
+    if (m >= 5e14) return { t: "Tiên Tôn", c: "#fff", cls: "rank-vocuc-item" };
+    if (m >= 1e12) return { t: "Đại Độ Kiếp", c: "#ff3d00", cls: "rank-do-kiep" };
+    if (m >= 5e11) return { t: "Hợp Thể", c: "#d500f9", cls: "rank-hop-the" };
+    if (m >= 1e10) return { t: "Luyện Hư", c: "#ffea00", cls: "rank-luyen-hu" };
+    if (m >= 1e9)  return { t: "Hóa Thần", c: "#00e676", cls: "rank-hoa-than" };
+    if (m >= 5e8)  return { t: "Nguyên Anh", c: "#00e5ff", cls: "rank-nguyen-anh" };
+    return { t: "Phàm Nhân", c: "#999", cls: "" };
 }
 
-/**
- * HÀM LẤY ĐƯỜNG DẪN DATABASE CỦA TỪNG GAME
- */
-const getPath = (id) => {
-    if(id === 'tx') return 'game_taixiu_settings';
-    if(id === 'xdach') return 'game_xidach_settings';
-    if(id === 'xd') return 'game_xocdia_settings';
-    if(id === 'rc') return 'game_rocket_settings';
-};
-
-/**
- * HÀM LẤY TÊN HIỂN THỊ CỦA TỪNG GAME
- */
-const getName = (id) => {
-    if(id === 'tx') return 'TÀI XỈU';
-    if(id === 'xdach') return 'XÌ DÁCH';
-    if(id === 'xd') return 'XÓC ĐĨA';
-    if(id === 'rc') return 'ROCKET';
-};
-
-/**
- * HÀM VÀO TRÒ CHƠI (ENTER GAME)
- * Kiểm tra trạng thái bảo trì của server và từng game cụ thể
- */
-function enterGame(url, gameId) {
-    db.ref(getPath(gameId) + '/isLocked').once('value', s => {
-        if ((isServerLocked || s.val()) && !userData.isSuperAdmin && !userData.isAdmin) {
-            alert("MÁY CHỦ ĐANG BẢO TRÌ!");
-        } else { window.location.href = url; }
-    });
-}
-
-/**
- * CÁC HÀM DÀNH CHO ADMIN & SUPER ADMIN
- */
-function setTag(id, tag) { db.ref('server/game_settings/' + id).update({ tag: tag }); }
-function toggleMaint(id) {
-    const path = getPath(id);
-    db.ref(path + '/isLocked').once('value', s => { db.ref(path).update({ isLocked: !s.val() }); });
-}
-function srvLock(s) { db.ref('server').update({ isLocked: s }); }
-function updateNotice() { const n = document.getElementById("newNotice").value; if(n) db.ref('server').update({ notice: n }); }
-function toggleAD(id, c) { db.ref('users/'+id).update({ isAdmin: !c }); }
-function delN(id) { if(confirm("Xóa vĩnh viễn?")) db.ref('users/'+id).remove(); }
-function editM(id, t) {
-    const f = document.getElementById("amt_" + id); const v = parseInt(f.value);
-    if (isNaN(v) || v <= 0) return;
-    db.ref('users/' + id + '/money').once('value', snap => {
-        db.ref('users/' + id).update({ money: Math.max(0, snap.val() + (t * v)) });
-    }).then(() => { f.value = ""; inputCache[id] = ""; });
-}
-
-/**
- * HÀM CẬP NHẬT GIAO DIỆN GAME (UI REFRESH)
- */
-function refreshUI() {
-    ['tx', 'xdach', 'xd', 'rc'].forEach(id => {
-        const btnId = id==='tx'?'btnTX':(id==='xdach'?'btnXDach':(id==='xd'?'btnXD':'btnRC'));
-        const elBtn = document.getElementById(btnId);
-        const title = document.getElementById('title_'+id);
-        const isGameLocked = gameMaintStatus[id] || false;
-        if(elBtn && title) {
-            if(isServerLocked || isGameLocked) { elBtn.classList.add('maint-mode'); title.innerText = "BẢO TRÌ"; }
-            else { elBtn.classList.remove('maint-mode'); title.innerText = getName(id) + (id==='rc'?' CRASH':' IMPERIAL'); }
-        }
-    });
-}
-
-/**
- * HÀM LẮNG NGHE SỰ KIỆN TỪ DATABASE (EVENT LISTENERS)
- */
-function startListeners() {
-    ['tx', 'xdach', 'xd', 'rc'].forEach(id => {
-        const btnId = id==='tx'?'btnTX':(id==='xdach'?'btnXDach':(id==='xd'?'btnXD':'btnRC'));
-        const elBtn = document.getElementById(btnId);
-        db.ref('server/game_settings/' + id + '/tag').on('value', s => {
-            const tag = s.val() || 'none';
-            const badge = document.getElementById('badge_'+id);
-            if(badge) {
-                badge.className = (tag==='hot'?'badge-hot':(tag==='new'?'badge-new':''));
-                badge.innerText = (tag==='none'?'':tag.toUpperCase());
-            }
-            if(elBtn) {
-                if(tag === 'hot') elBtn.style.order = "1";
-                else if(tag === 'new') elBtn.style.order = "2";
-                else elBtn.style.order = "3";
-            }
-            updateAdminSTT(id);
-        });
-        db.ref(getPath(id) + '/isLocked').on('value', s => {
-            gameMaintStatus[id] = s.val() || false;
-            const maintBtn = document.getElementById('btn_maint_'+id);
-            if(maintBtn) {
-                maintBtn.innerText = gameMaintStatus[id] ? "MỞ GAME" : "KHÓA GAME";
-                maintBtn.style.background = gameMaintStatus[id] ? "#2e7d32" : "#b71c1c";
-            }
-            refreshUI();
-            updateAdminSTT(id);
-        });
-    });
-}
-
-/**
- * CẬP NHẬT TRẠNG THÁI TRONG BẢNG ĐIỀU KHIỂN ADMIN
- */
-function updateAdminSTT(id) {
-    const el = document.getElementById('stt_'+id+'_admin'); if(!el) return;
-    db.ref('server/game_settings/'+id+'/tag').once('value', t => {
-        db.ref(getPath(id)+'/isLocked').once('value', l => {
-            el.innerText = `${getName(id)}: [${(t.val()||'NONE').toUpperCase()} - ${l.val()?'BẢO TRÌ':'ONLINE'}]`;
-        });
-    });
-}
-
-/**
- * LẮNG NGHE TRẠNG THÁI SERVER TỔNG QUÁT
- */
-db.ref('server').on('value', s => {
-    const data = s.val() || { isLocked: false, notice: "Welcome!" };
-    isServerLocked = data.isLocked;
-    document.getElementById("lockBanner").style.display = isServerLocked ? "block" : "none";
-    document.getElementById("marqueeText").innerText = data.notice;
-    const label = document.getElementById("srvStatusDisp");
-    if(label) {
-        label.innerText = isServerLocked ? "TRẠNG THÁI: ĐANG KHÓA" : "TRẠNG THÁI: ĐANG MỞ";
-        label.style.color = isServerLocked ? "#ff0000" : "#00ff00"; // Đỏ khi khóa, Xanh khi mở
-    }
-    refreshUI();
-});
-
-/**
- * HÀM ĐĂNG KÝ: PHONG CÁCH HOÀNG GIA, CHẶN 5-15, KHÔNG ALERT
- */
-function register() {
-    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
-    const stBox = document.getElementById("logStatusText");
-    if (u.length < 5 || u.length > 15) { stBox.innerText = "DANH TÁNH PHẢI TỪ 5 ĐẾN 15 KÝ TỰ!"; return; }
-    if (p.length < 6) { stBox.innerText = "MẬT CHỈ PHẢI CÓ ÍT NHẤT 6 KÝ TỰ!"; return; }
-    stBox.innerText = "KHAI MỞ DANH TÁNH TRÊN TIÊN BẢNG...";
-    auth.createUserWithEmailAndPassword(u + "@casino.com", p)
-    .then(r => {
-        stBox.innerText = "DANH TÁNH ĐÃ ĐƯỢC KHẮC GHI - THÀNH CÔNG!";
-        return db.ref('users/' + r.user.uid).set({ username: u, money: 1000000, isAdmin: false, isSuperAdmin: false });
-    })
-    .catch(e => { stBox.innerText = e.code === 'auth/email-already-in-use' ? "DANH TÁNH NÀY ĐÃ ĐƯỢC CHỦ NHÂN KHÁC CHIẾM HỮU!" : "THIÊN ĐẠO TRỤC TRẶC - LỖI KHỞI TẠO!"; });
-}
-
-/**
- * HÀM ĐĂNG NHẬP: PHONG CÁCH HOÀNG GIA, KHÔNG ALERT
- */
-function login() { 
-    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim();
-    const stBox = document.getElementById("logStatusText");
-    stBox.innerText = "TRUY QUÉT THẦN THỨC - ĐANG XÁC THỰC...";
-    auth.signInWithEmailAndPassword(u + "@casino.com", p).catch(() => { stBox.innerText = "MẬT CHỈ SAI LỆCH - TRUY CẬP BỊ TỪ CHỐI!"; });
-}
-
-/**
- * THEO DÕI TRẠNG THÁI ĐĂNG NHẬP (AUTH STATE)
- */
 auth.onAuthStateChanged(user => {
-    const stBox = document.getElementById("logStatusText");
-    const aForm = document.getElementById("authForm");
     if (user) {
-        startListeners();
         db.ref('users/' + user.uid).on('value', s => {
             userData = s.val(); if(!userData) return;
             userData.uid = user.uid;
+            const today = new Date().toDateString();
+            if(userData.lastMineDate !== today) { db.ref('users/'+user.uid).update({ lastMineDate: today, mineCount: 0 }); }
+            const uName = userData.username.toUpperCase();
+            document.getElementById("lbName").innerText = uName; 
+            document.getElementById("lbMoney").innerText = formatMoney(userData.money) + " $";
+            document.getElementById("accNameDisplay").innerText = uName;
+            document.getElementById("accMoneyDisplay").innerText = "Số dư: " + formatMoney(userData.money) + " $";
+            document.getElementById("afkLimitLabel").innerText = `Giới hạn ngày: ${userData.mineCount || 0}/50`;
+            checkSupremeUI();
+            let r = getRank(userData.money);
+            document.getElementById("accTuViTag").innerText = r.t;
+            if (r.t === "Tiên Tôn") { document.getElementById("accTuViTag").className = "tu-vi-tag ach-tienton"; document.getElementById("accTuViTag").style.background = ""; } 
+            else { document.getElementById("accTuViTag").className = "tu-vi-tag"; document.getElementById("accTuViTag").style.background = r.c; }
+            const roleName = userData.isSuperAdmin ? "ADMIN TỐI CAO" : (userData.isAdmin ? "ADMIN" : "MEMBER");
+            const roleCls = userData.isSuperAdmin ? "role-badge role-sad" : (userData.isAdmin ? "role-badge role-ad" : "role-badge role-mem");
+            document.getElementById("lbRole").innerText = roleName; document.getElementById("lbRole").className = roleCls;
+            document.getElementById("accRoleBadge").innerText = roleName; document.getElementById("accRoleBadge").className = roleCls;
+            if(userData.isSuperAdmin) document.getElementById("sadDashboard").style.display = "block";
             document.getElementById("loginPanel").style.display = "none";
             document.getElementById("lobbyPanel").style.display = "block";
-            document.getElementById("lobbyName").innerText = userData.username.toUpperCase();
-            document.getElementById("lobbyMoney").innerText = "Số dư: " + formatMoney(userData.money);
-            const rDisp = document.getElementById("myRankDisplay");
-            if(userData.isSuperAdmin) { rDisp.innerText = "👑ADMIN TỐI CAO👑"; rDisp.className = "role-badge role-sad"; document.getElementById("sadDashboard").style.display = "block"; }
-            else if(userData.isAdmin) { rDisp.innerText = "AD"; rDisp.className = "role-badge role-ad"; }
-            else { rDisp.innerText = "MEM"; rDisp.className = "role-badge role-mem"; }
+            document.getElementById("menuTrigger").style.display = "block";
+            updateAchievements(user.uid);
+            if(document.getElementById("marketPanel").style.display === 'block') renderMarketUI();
         });
-        db.ref('users').on('value', snap => {
-            const data = snap.val(); if(!data) return;
-            const arr = Object.keys(data).map(id => ({id, ...data[id]})).sort((a,b) => b.money - a.money);
-            let h10 = ""; arr.slice(0, 10).forEach((u, i) => {
-                let m = u.money, title = "Phàm Nhân", color = "#aaa", cls = "";
-                if (m >= 1000000000000000) { title = "Tiên Tôn"; color = "#fff"; cls = "rank-vocuc-item"; }
-                else if (m >= 1000000000000) { title = "Đại Độ Kiếp"; color = "#ff3d00"; cls = "rank-do-kiep"; }
-                else if (m >= 500000000000) { title = "Hợp Thể"; color = "#d500f9"; cls = "rank-hop-the"; }
-                else if (m >= 10000000000) { title = "Luyện Hư"; color = "#ffea00"; cls = "rank-luyen-hu"; }
-                else if (m >= 1000000000) { title = "Hóa Thần"; color = "#00e676"; cls = "rank-hoa-than"; }
-                else if (m >= 500000000) { title = "Nguyên Anh"; color = "#00e5ff"; cls = "rank-nguyen-anh"; }
-                else if (m >= 10000000) { title = "Kết Đan"; color = "#2979ff"; }
-                else if (m >= 1000000) { title = "Trúc Cơ"; color = "#d500f9"; }
-                else { title = "Phàm Nhân"; color = "#999"; }
-                h10 += `<div class="user-item-card ${cls}" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #222;">
-                    <span><b style="color:#ffd700; margin-right:10px;">#${i+1}</b><b>${u.username.toUpperCase()}</b><br><span class="tu-vi-tag" style="background:${color}; color:#000;">${title}</span></span>
-                    <b style="color:#4caf50; font-size:16px;">${formatMoney(u.money)}</b>
-                </div>`;
-            });
-            document.getElementById("top10List").innerHTML = h10;
-            if(userData && userData.isSuperAdmin) {
-                let hSad = ""; arr.forEach(u => {
-                    const cVal = inputCache[u.id] || "";
-                    hSad += `<div class="user-item-card"><div style="display:flex; justify-content:space-between;"><b style="font-size:13px; color:#ffd700;">${u.username.toUpperCase()}</b><span style="color:#4caf50;">${formatMoney(u.money)}</span></div>
-                        <div class="control-grid">
-                            <input type="number" id="amt_${u.id}" class="sad-input" style="padding:5px; margin:0; font-size:12px; height:38px;" placeholder="$$" value="${cVal}" oninput="inputCache['${u.id}']=this.value">
-                            <button onclick="editM('${u.id}',1)" class="btn-mini" style="background:green;">+</button>
-                            <button onclick="editM('${u.id}',-1)" class="btn-mini" style="background:red;">-</button>
-                            <button onclick="toggleAD('${u.id}',${u.isAdmin})" class="btn-mini" style="background:${u.isAdmin?'#ffd700':'#444'};color:${u.isAdmin?'#000':'#fff'}">AD</button>
-                            <button onclick="delN('${u.id}')" class="btn-mini" style="background:#333; ${u.isSuperAdmin?'display:none;':''}">X</button>
-                        </div></div>`;
-                });
-                document.getElementById("masterUserList").innerHTML = hSad;
-            }
-        });
-    } else {
-        // HIỆU ỨNG KẾT NỐI KHI KHÔNG CÓ PHIÊN LÀM VIỆC CŨ (SẢNH 1 STYLE)
-        stBox.innerText = "ĐANG KHỞI TẠO LIÊN KẾT ĐẾ CHẾ...";
-        setTimeout(() => { 
-            stBox.innerText = "LINH KHÍ QUY TỤ - KẾT NỐI THÀNH CÔNG!"; 
-            aForm.style.display = "block"; 
-        }, 1500);
-    }
+        db.ref('users').on('value', snap => { window.allUsersData = snap.val(); renderBXH(); if(userData && userData.isSuperAdmin) renderAdminPanel(snap.val()); if(userData) updateAchievements(userData.uid); });
+        initGameAdminListeners();
+        listenForRoyalTrash();
+    } else { setTimeout(() => { document.getElementById("authForm").style.display = "block"; showStatus("SẴN SÀNG!"); }, 100); }
 });
 
-/**
- * HÀM ĐĂNG XUẤT (LOGOUT)
- */
+function startMining() {
+    if((userData.mineCount || 0) >= 50) { alert("Đã đạt giới hạn đào hôm nay!"); return; }
+    const btn = document.getElementById("btnMine"); btn.disabled = true; 
+    let timeLeft = 30; document.getElementById("afkStatus").innerText = `Đang đào... (${timeLeft} giây)`;
+    const timer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) { document.getElementById("afkStatus").innerText = `Đang đào... (${timeLeft} giây)`; } 
+        else {
+            clearInterval(timer);
+            let gotGold = Math.random() < 0.15;
+            let update = { mineCount: (userData.mineCount || 0) + 1, iron: (userData.iron || 0) + 1 };
+            if(gotGold) update.gold = (userData.gold || 0) + 1;
+            db.ref('users/' + userData.uid).update(update);
+            btn.disabled = false; 
+            document.getElementById("afkStatus").innerText = gotGold ? "Tìm thấy 1 Sắt & 1 Vàng!" : "Tìm thấy 1 Sắt!";
+        }
+    }, 1000);
+}
+
+function listenForRoyalTrash() { db.ref('server/royal_trash').on('value', s => { if(s.val() && s.val().active) document.getElementById("royalTrash").style.display = "block"; else document.getElementById("royalTrash").style.display = "none"; }); }
+function grabTrash() { db.ref('server/royal_trash').transaction(cur => { if(cur && cur.active) { db.ref('users/'+userData.uid+'/iron').transaction(v => (v||0)+5); return null; } return cur; }); alert("Bạn đã nhanh tay nhặt được 5 Mảnh Sắt!"); }
+
+function renderMarketUI() {
+    const iron = userData.iron || 0, gold = userData.gold || 0;
+    document.getElementById("marketInventory").innerHTML = `<div class="inv-slot">🧱 Sắt: ${iron}</div><div class="inv-slot" style="color:#ffd700;">🟡 Vàng: ${gold}</div>`;
+    let hCraft = ""; 
+    RECIPES.forEach(r => { hCraft += `<div class="craft-card"><div style="font-size:30px;">${r.img}</div><b style="font-size:12px; color:#ffd700;">${r.name}</b><br><small style="font-size:9px; color:#777;">Cần: ${r.iron} S, ${r.gold} V</small><br><button onclick="openCraftPriceModal('${r.id}')" style="background:#4caf50; color:#fff; border:none; padding:5px 10px; border-radius:8px; font-weight:900; margin-top:8px; cursor:pointer;">CHẾ TẠO</button></div>`; });
+    document.getElementById("craftRecipesArea").innerHTML = hCraft;
+    db.ref('server/global_market').on('value', snap => {
+        let hMarket = ""; const data = snap.val();
+        if(data) { Object.keys(data).forEach(k => { const it = data[k]; hMarket += `<div style="background:#111; padding:15px; border-radius:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border-left:3px solid #00e676;"><div><b>${it.name}</b><br><small style="color:#666;">Bán bởi: ${it.sellerName}</small></div><div style="text-align:right;"><b style="color:#4caf50;">${it.price.toLocaleString()} $</b><br><button onclick="buyMarketItem('${k}','${it.sellerId}',${it.price},${it.rewardVip})" style="background:#ffd700; color:#000; border:none; padding:5px 10px; border-radius:8px; font-weight:900; margin-top:5px; cursor:pointer;">MUA (+${it.rewardVip} VIP)</button></div></div>`; }); }
+        else hMarket = "<p style='color:#444; text-align:center;'>Chợ hiện chưa có hàng...</p>";
+        document.getElementById("marketListArea").innerHTML = hMarket;
+    });
+}
+
+// MỞ MODAL ĐỊNH GIÁ
+function openCraftPriceModal(rid) {
+    const r = RECIPES.find(x => x.id === rid);
+    const userIron = userData.iron || 0, userGold = userData.gold || 0;
+    if(userIron < r.iron || userGold < r.gold) { alert(`Không đủ nguyên liệu!`); return; }
+    
+    currentCraftingItem = r;
+    document.getElementById("craftReviewIcon").innerText = r.img;
+    document.getElementById("craftReviewName").innerText = r.name.toUpperCase();
+    document.getElementById("inputCustomPrice").value = r.defaultPrice;
+    document.getElementById("craftPriceModal").style.display = "flex";
+}
+
+// XÁC NHẬN CHẾ TẠO VÀ ĐĂNG BÁN VỚI GIÁ TÙY CHỈNH
+function confirmListing() {
+    const price = parseInt(document.getElementById("inputCustomPrice").value);
+    if(isNaN(price) || price < 1000) { alert("Giá bán tối thiểu là 1.000$!"); return; }
+    
+    const r = currentCraftingItem;
+    db.ref('users/' + userData.uid).update({ iron: userData.iron - r.iron, gold: userData.gold - r.gold }).then(() => {
+        db.ref('server/global_market').push({ 
+            sellerId: userData.uid, 
+            sellerName: userData.username, 
+            name: r.name, 
+            price: price, 
+            rewardVip: r.rewardVip 
+        });
+        document.getElementById("craftPriceModal").style.display = "none";
+        alert(`Chế tạo xong! Đã đăng bán ${r.name} với giá ${formatMoney(price)} $`);
+    });
+}
+
+function buyMarketItem(key, sid, pri, vip) { if(userData.uid === sid) { alert("Không thể tự mua đồ của mình!"); return; } if(userData.money < pri) { alert("Bạn không đủ tiền!"); return; } db.ref('users/' + userData.uid).update({ money: userData.money - pri, vipPoints: (userData.vipPoints || 0) + vip }); db.ref('users/' + sid + '/money').transaction(m => (m || 0) + pri); db.ref('server/global_market/' + key).remove(); alert(`Giao dịch xong! Bạn nhận được ${vip} điểm VIP.`); }
+
+function toggleMenu(s) { document.getElementById("sideMenu").classList.toggle("active", s); document.getElementById("menuOverlay").style.display = s ? "block" : "none"; }
+function switchPage(p) { 
+    toggleMenu(false); 
+    ['lobbyPanel', 'accountPanel', 'bxhPanel', 'marketPanel', 'dailyPanel'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; }); 
+    document.getElementById(p + 'Panel').style.display = 'block'; 
+    if(p === 'market') renderMarketUI(); 
+    if(p === 'daily') {
+        const today = new Date().toDateString();
+        const gift = document.getElementById("giftBox"), rewardMsg = document.getElementById("rewardMsg"), dailyStatus = document.getElementById("dailyStatus"), btnBack = document.getElementById("btnDailyBack");
+        if (userData.lastDailyDate === today) { gift.innerHTML = "🧧"; gift.onclick = null; rewardMsg.style.display = "block"; rewardMsg.innerHTML = "Hẹn gặp lại đạo hữu vào ngày mai!"; dailyStatus.innerText = "Hôm nay đạo hữu đã nhận bổng lộc rồi."; btnBack.style.display = "block"; } 
+        else { gift.innerHTML = "🎁"; gift.className = "gift-box-container"; gift.onclick = claimDaily; rewardMsg.style.display = "none"; dailyStatus.innerText = "Mỗi ngày đạo hữu có 1 lượt nhận tiền thưởng ngẫu nhiên."; btnBack.style.display = "none"; }
+    }
+}
+
+function claimDaily() {
+    const today = new Date().toDateString();
+    if (userData.lastDailyDate === today) { alert("Hôm nay đạo hữu đã nhận bổng lộc rồi!"); return; }
+    const gift = document.getElementById("giftBox"), rewardMsg = document.getElementById("rewardMsg"), dailyStatus = document.getElementById("dailyStatus");
+    gift.classList.add("gift-opening"); gift.onclick = null;
+    setTimeout(() => {
+        const min = 100000, max = 10000000;
+        const reward = Math.floor(Math.random() * (max - min + 1)) + min;
+        db.ref('users/' + userData.uid).update({ money: (userData.money || 0) + reward, lastDailyDate: today }).then(() => {
+            gift.classList.remove("gift-opening"); gift.innerHTML = "🧧";
+            rewardMsg.innerHTML = `CHÚC MỪNG!<br>Nhận được<br><span style="font-size:35px; color:#4caf50;">+${formatMoney(reward)} $</span>`;
+            rewardMsg.style.display = "block"; dailyStatus.innerText = "Đã nhận bổng lộc hôm nay!";
+            document.getElementById("btnDailyBack").style.display = "block";
+            showCongrat("BỔNG LỘC HOÀNG GIA", `Đế chế đã ban thưởng <b>${formatMoney(reward)} $</b> vào ngân khố!`);
+        });
+    }, 2000);
+}
+
+function checkSupremeUI() { if(!window.allUsersData || !userData) return; const arr = Object.keys(window.allUsersData).map(id => ({id, ...window.allUsersData[id]})); const richRank = [...arr].sort((a,b) => b.money - a.money).findIndex(u => u.id === userData.uid) + 1; const vipRank = [...arr].sort((a,b) => (b.vipPoints || 0) - (a.vipPoints || 0)).findIndex(u => u.id === userData.uid) + 1; const el = document.getElementById("accNameDisplay"); if(richRank === 1 && vipRank === 1) el.className = "effect-rank-1"; else if(vipRank === 1) el.className = "effect-rank-2"; else if(richRank === 1) el.className = "effect-rank-3"; else el.className = ""; }
+function updateAchievements(uid) {
+    if(!window.allUsersData) return; const arr = Object.keys(window.allUsersData).map(id => ({id, ...window.allUsersData[id]}));
+    const richSorted = [...arr].sort((a,b) => b.money - a.money); const richRank = richSorted.findIndex(u => u.id === uid) + 1;
+    const vipSorted = [...arr].sort((a,b) => (b.vipPoints || 0) - (a.vipPoints || 0)); const vipRank = vipSorted.findIndex(u => u.id === uid) + 1;
+    document.querySelectorAll('.ach-badge').forEach(el => el.style.display = 'none');
+    const isNowTienTon = (richRank === 1 && vipRank === 1);
+    if (richRank >= 1 && richRank <= 10) { const el = document.getElementById(`ach_rich_${richRank}`); if(el) { el.style.display = "block"; if (lastRichRank !== -1 && richRank < lastRichRank) { showCongrat("THĂNG CẤP TÀI PHÚ", `Đạo hữu đã khai phá:<br><b>${el.innerText}</b>`); } } }
+    if (vipRank >= 1 && vipRank <= 10 && (vipSorted[vipRank-1].vipPoints || 0) > 0) { const el = document.getElementById(`ach_vip_${vipRank}`); if(el) { el.style.display = "block"; if (lastVipRank !== -1 && vipRank < lastVipRank) { showCongrat("THĂNG CẤP UY DANH", `Uy danh tăng vọt, đạo hữu thăng lên:<br><b>${el.innerText}</b>`); } } }
+    if (isNowTienTon) { document.getElementById("ach_tienton").style.display = "block"; if (!lastIsTienTon && lastRichRank !== -1) { showCongrat("PHONG VỊ TỐI CAO!", "Chúc mừng đạo hữu thăng vị thành:<br><b class='effect-rank-1' style='font-size:24px;'>VÔ CỰC TIÊN TÔN</b>"); } }
+    lastIsTienTon = isNowTienTon; lastRichRank = richRank; lastVipRank = vipRank;
+}
+
+function renderBXH() {
+    const data = window.allUsersData; if(!data) return; const arr = Object.keys(data).map(id => ({id, ...data[id]})); let html = "";
+    if(currentBXH === 'rich') { arr.sort((a,b) => b.money - a.money).slice(0, 10).forEach((u, i) => { let r = getRank(u.money); html += `<div class="user-item-card ${r.cls}" style="display:flex; justify-content:space-between; align-items:center;"><span><b style="color:#ffd700;">#${i+1}</b><b class="${i===0?'effect-rank-3':''}">${u.username.toUpperCase()}</b><br><span class="tu-vi-tag" style="background:${r.c}; color:#000;">${r.t}</span></span><b style="color:#4caf50;">${formatMoney(u.money)}</b></div>`; }); } 
+    else { arr.sort((a,b) => (b.vipPoints||0) - (a.vipPoints||0)).slice(0, 10).forEach((u, i) => { html += `<div class="user-item-card" style="border: 1px solid #ffd700; display:flex; justify-content:space-between; align-items:center; padding:15px;"><span><b style="color:#ffd700;">#${i+1}</b><b class="${i===0?'effect-rank-2':''}">${u.username.toUpperCase()}</b></span><b style="color:#ffd700">${(u.vipPoints||0).toLocaleString()} PTS</b></div>`; }); }
+    document.getElementById("top10List").innerHTML = html;
+}
+
+function switchBXH(type) { currentBXH = type; document.getElementById("tabRich").classList.toggle("active", type === 'rich'); document.getElementById("tabVip").classList.toggle("active", type === 'vip'); renderBXH(); }
+
+function renderAdminPanel(data) {
+    const arr = Object.keys(data).map(id => ({id, ...data[id]})).sort((a,b) => b.money - a.money); let h = "";
+    arr.forEach(u => { 
+        const cVal = inputCache[u.id] || ""; const vVal = inputCache['v_'+u.id] || "";
+        h += `<div class="user-item-card"><div style="display:flex; justify-content:space-between;"><b style="color:#ffd700; font-size:13px;">${u.username.toUpperCase()}</b><span>$:${formatMoney(u.money)} | V:${(u.vipPoints||0)}</span></div><div class="control-grid"><input type="number" id="amt_${u.id}" class="sad-input" style="padding:5px; height:38px; font-size:12px; margin:0;" placeholder="$$" value="${cVal}" oninput="inputCache['${u.id}']=this.value"><button onclick="editM('${u.id}',1)" class="btn-mini" style="background:green;">+$</button><button onclick="editM('${u.id}',-1)" class="btn-mini" style="background:red;">-$</button><button onclick="toggleAD('${u.id}',${u.isAdmin})" class="btn-mini" style="background:${u.isAdmin?'#ffd700':'#444'}; color:${u.isAdmin?'#000':'#fff'}">AD</button><button onclick="delUser('${u.id}')" class="btn-mini" style="background:#333;">X</button></div><div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="vip_${u.id}" class="sad-input" style="padding:5px; height:38px; font-size:12px; margin:0; flex:1;" placeholder="VIP Pts" value="${vVal}" oninput="inputCache['v_${u.id}']=this.value"><button onclick="editVIP('${u.id}',1)" class="btn-mini" style="background:#d500f9; flex:0.5;">+V</button><button onclick="editVIP('${u.id}',-1)" class="btn-mini" style="background:#7b1fa2; flex:0.5;">-V</button></div></div>`; 
+    });
+    document.getElementById("masterUserList").innerHTML = h;
+}
+
+const getPath = (id) => id==='tx'?'game_taixiu_settings':(id==='xdach'?'game_xidach_settings':(id==='xd'?'game_xocdia_settings':'game_rocket_settings'));
+const getName = (id) => id==='tx'?'TÀI XỈU':(id==='xdach'?'XÌ DÁCH':(id==='xd'?'XÓC ĐĨA':'ROCKET'));
+
+function updateGameDisplay(id, tag, maint) {
+    const btn = document.getElementById(id==='tx'?'btnTX':(id==='xdach'?'btnXDach':(id==='xd'?'btnXD':'btnRC')));
+    const title = document.getElementById('title_'+id), maintBtn = document.getElementById('btn_maint_'+id), sttAdmin = document.getElementById('stt_'+id+'_admin');
+    if(!btn || !title) return;
+    if(isServerLocked) { btn.classList.add('maint-mode'); title.innerText = "BẢO TRÌ SERVER"; title.style.color = "#f00"; }
+    else if(maint) { btn.classList.add('maint-mode'); title.innerText = "BẢO TRÌ GAME"; title.style.color = "#ff8c00"; }
+    else { btn.classList.remove('maint-mode'); title.innerText = getName(id) + (id==='rc'?' CRASH':' IMPERIAL'); title.style.color = "#ffd700"; }
+    if(sttAdmin) sttAdmin.innerText = `${getName(id)}: [${tag.toUpperCase()} - ${maint?'BẢO TRÌ':'ONLINE'}]`;
+    if(maintBtn) { maintBtn.innerText = maint ? "MỞ GAME" : "KHÓA GAME"; maintBtn.style.background = maint ? "#2e7d32" : "#b71c1c"; }
+}
+
+function initGameAdminListeners() {
+    ['tx', 'xdach', 'xd', 'rc'].forEach(id => {
+        let curTag = 'none', curMaint = false;
+        db.ref('server/game_settings/' + id + '/tag').on('value', s => { curTag = s.val() || 'none'; const badge = document.getElementById('badge_'+id); const card = document.getElementById(id==='tx'?'btnTX':(id==='xdach'?'btnXDach':(id==='xd'?'btnXD':'btnRC'))); if(badge) { badge.className = (curTag==='hot'?'badge-hot':(curTag==='new'?'badge-new':'')); badge.innerText = (curTag==='none'?'':curTag.toUpperCase()); } if(card) card.style.order = (curTag==='hot'?'1':(curTag==='new'?'2':'3')); updateGameDisplay(id, curTag, curMaint); });
+        db.ref(getPath(id) + '/isLocked').on('value', s => { curMaint = s.val() || false; gameMaintStatus[id] = curMaint; updateGameDisplay(id, curTag, curMaint); });
+    });
+}
+
+function srvLock(b) { db.ref('server').update({ isLocked: b }); }
 function logout() { auth.signOut().then(() => location.reload()); }
+function updateNotice() { const n = document.getElementById("newNotice").value; if(n) db.ref('server').update({ notice: n }); }
+function editM(id, t) { const f = document.getElementById("amt_"+id); const v = parseInt(f.value); if(isNaN(v) || v <= 0) return; db.ref('users/'+id+'/money').once('value', s => db.ref('users/'+id).update({ money: Math.max(0, s.val() + (t*v)) })); }
+function editVIP(id, t) { const f = document.getElementById("vip_"+id); const v = parseInt(f.value); if(isNaN(v) || v <= 0) return; db.ref('users/'+id+'/vipPoints').once('value', s => db.ref('users/'+id).update({ vipPoints: Math.max(0, (s.val()||0) + (t*v)) })); }
+function toggleMaint(id) { const p = getPath(id); db.ref(p+'/isLocked').once('value', s => db.ref(p).update({ isLocked: !s.val() })); }
+function setTag(id, tag) { db.ref('server/game_settings/'+id).update({ tag: tag }); }
+function delUser(id) { if(confirm("XÓA?")) db.ref('users/'+id).remove(); }
+function toggleAD(id, c) { db.ref('users/'+id).update({ isAdmin: !c }); }
+
+function register() {
+    const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim(); if (u.length < 5 || p.length < 6) { showStatus("QUÁ NGẮN!", true); return; }
+    auth.createUserWithEmailAndPassword(u + "@casino.com", p).then(r => { db.ref('users/' + r.user.uid).set({ username: u, money: 1000000, iron: 0, gold: 0, vipPoints: 0, mineCount: 0, isAdmin: false, isSuperAdmin: false }); });
+}
+function login() { const u = document.getElementById("username").value.trim().toLowerCase(), p = document.getElementById("password").value.trim(); auth.signInWithEmailAndPassword(u + "@casino.com", p); }
+
+db.ref('server').on('value', s => {
+    isServerLocked = s.val()?.isLocked || false; document.getElementById("lockBanner").style.display = isServerLocked ? "block" : "none"; document.getElementById("marqueeText").innerText = s.val()?.notice || "";
+    ['tx', 'xdach', 'xd', 'rc'].forEach(id => { db.ref('server/game_settings/' + id + '/tag').once('value', t => { updateGameDisplay(id, t.val() || 'none', gameMaintStatus[id]); }); });
+    const label = document.getElementById("srvStatusDisp"); if(label) { label.innerText = isServerLocked ? "SERVER: ĐANG KHÓA" : "SERVER: ĐANG MỞ"; label.style.color = isServerLocked ? "#f00" : "#0f0"; }
+});
 </script>
 </body>
 </html>
