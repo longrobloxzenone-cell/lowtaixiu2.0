@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ghost Escape - Hell Edition V1.0</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nosifer&family=Inter:wght@400;700&display=swap');
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
+        html, body { 
+            height: 100dvh; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background-color: #0a0505; 
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        .font-ghost { font-family: 'Nosifer', cursive; }
+        
+        #game-canvas { 
+            width: 100%; 
+            height: 100%; 
+            background: radial-gradient(circle at center top, #1a0a0a 0%, #050202 100%); 
+        }
+
+        .multiplier-text { 
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); 
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ghost-float { animation: ghostFloat 3s ease-in-out infinite; }
+        @keyframes ghostFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .blood-overlay {
+            position: fixed; inset: 0; pointer-events: none;
+            background: radial-gradient(circle, transparent 60%, rgba(153, 27, 27, 0.4) 100%);
+            opacity: 0; transition: opacity 0.5s;
+        }
+
+        .crash-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 2px, 0); }
+            30%, 70% { transform: translate3d(-4px, -4px, 0); }
+            50% { transform: translate3d(4px, 4px, 0); }
+        }
+
+        #loading-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="w-16 h-16 border-4 border-red-900 border-t-red-600 rounded-full animate-spin mb-4"></div>
+        <p class="font-ghost text-red-600 animate-pulse text-xs tracking-widest">ĐANG TRIỆU HỒI LINH HỒN...</p>
+    </div>
+
+    <div class="blood-overlay" id="blood-fx"></div>
+
+    <div class="px-4 flex justify-between items-center bg-black/80 backdrop-blur-lg border-b border-red-900/30 z-20 h-16 pt-[var(--sat)]">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-950 rounded-full border border-red-600 flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.3)]">
+                <span class="text-xl">👻</span>
+            </div>
+            <div>
+                <h1 class="text-[10px] font-ghost text-red-500 uppercase">Ghost Escape</h1>
+                <p id="player-name" class="text-[9px] text-gray-500 font-bold">Vô danh tiểu ma</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div class="bg-red-950/40 px-4 py-1.5 rounded-full border border-red-900/50 flex items-center gap-2">
+                <span class="text-yellow-500 text-xs">🪙</span>
+                <span id="balance-display" class="font-bold text-sm text-yellow-500">0</span>
+            </div>
+            <button id="admin-btn" onclick="toggleAdmin()" style="display: none;" class="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center text-red-500 border border-red-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-grow flex flex-col relative overflow-hidden">
+        <div id="history-bar" class="flex gap-2 px-3 py-2 bg-black/60 overflow-x-auto no-scrollbar border-b border-white/5 h-10 items-center"></div>
+
+        <div id="game-viewport" class="relative flex-grow w-full overflow-hidden">
+            <canvas id="game-canvas"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div id="multiplier" class="text-7xl sm:text-9xl font-ghost text-white multiplier-text">1.00x</div>
+                <div id="game-status" class="mt-4 text-sm font-bold text-red-500 uppercase tracking-[0.3em] opacity-0">HẮC VÔ THƯỜNG ĐANG ĐẾN...</div>
+                <div id="admin-tag" class="mt-2 text-[9px] bg-red-600 text-white px-3 py-0.5 rounded-full font-black hidden uppercase">NGHIỆP LỰC CHI PHỐI</div>
+            </div>
+        </div>
+
+        <div class="bg-[#0f0707] border-t border-red-900/30 p-4 pb-[calc(var(--sab)+1rem)] z-20">
+            <div class="max-w-4xl mx-auto grid grid-cols-2 gap-4">
+                
+                <div class="bg-red-950/20 p-3 rounded-2xl border border-red-900/20 space-y-3">
+                    <div class="flex justify-between items-center text-[10px] font-bold text-red-400 uppercase">
+                        <span>Cửa Sinh 1</span>
+                        <span id="win-1" class="text-green-500 hidden">+0</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center bg-black rounded-xl border border-red-900/50 h-10 px-3">
+                            <input type="number" id="input-0" value="100000" class="w-full bg-transparent text-white font-bold text-sm outline-none">
+                            <button onclick="quickBet(0, 2)" class="text-xs text-red-500 font-bold px-2">2x</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="auto-0" placeholder="Auto x" step="0.1" class="w-full bg-black border border-red-900/30 rounded-lg h-8 px-3 text-xs text-white outline-none">
+                            <button id="autobtn-0" onclick="toggleAuto(0)" class="bg-gray-800 text-[10px] px-3 h-8 rounded-lg font-bold uppercase">Auto</button>
+                        </div>
+                    </div>
+                    <button id="action-0" onclick="handleBet(0)" class="w-full h-12 bg-red-600 hover:bg-red-500 rounded-xl font-ghost text-xs text-white shadow-[0_4px_15px_rgba(220,38,38,0.4)] transition-all">THAO TÁC</button>
+                </div>
+
+                <div class="bg-red-950/20 p-3 rounded-2xl border border-red-900/20 space-y-3">
+                    <div class="flex justify-between items-center text-[10px] font-bold text-red-400 uppercase">
+                        <span>Cửa Sinh 2</span>
+                        <span id="win-2" class="text-green-500 hidden">+0</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center bg-black rounded-xl border border-red-900/50 h-10 px-3">
+                            <input type="number" id="input-1" value="100000" class="w-full bg-transparent text-white font-bold text-sm outline-none">
+                            <button onclick="quickBet(1, 2)" class="text-xs text-red-500 font-bold px-2">2x</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="auto-1" placeholder="Auto x" step="0.1" class="w-full bg-black border border-red-900/30 rounded-lg h-8 px-3 text-xs text-white outline-none">
+                            <button id="autobtn-1" onclick="toggleAuto(1)" class="bg-gray-800 text-[10px] px-3 h-8 rounded-lg font-bold uppercase">Auto</button>
+                        </div>
+                    </div>
+                    <button id="action-1" onclick="handleBet(1)" class="w-full h-12 bg-red-600 hover:bg-red-500 rounded-xl font-ghost text-xs text-white shadow-[0_4px_15px_rgba(220,38,38,0.4)] transition-all">THAO TÁC</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-zinc-900 w-full max-w-sm rounded-3xl border border-red-600/50 p-6 space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="font-ghost text-red-600 text-sm">CUNG ĐIỆN DIÊM VƯƠNG</h2>
+                <button onclick="toggleAdmin()" class="text-white text-xl">✕</button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-zinc-500 font-bold uppercase">Kết quả ván tới (x)</label>
+                    <input type="number" id="next-res" placeholder="1.50" step="0.01" class="w-full bg-black border border-zinc-800 rounded-xl h-12 px-4 text-white mt-1 outline-none focus:border-red-600">
+                </div>
+                <button onclick="setResult()" class="w-full bg-red-600 h-12 rounded-xl font-bold uppercase text-xs">Xác nhận định mệnh</button>
+                <button onclick="forceKill()" class="w-full border border-red-600 text-red-600 h-12 rounded-xl font-bold uppercase text-xs">BẮT LINH HỒN NGAY</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-box" class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 w-full px-6"></div>
+
+    <script>
+        // CẤU HÌNH FIREBASE (Dùng chung Config từ file cũ của bạn)
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCbESIH8uq5Q6R45ehisGp-Lsh9xz_ejDk", 
+            authDomain: "tx888-85658.firebaseapp.com", 
+            databaseURL: "https://tx888-85658-default-rtdb.firebaseio.com", 
+            projectId: "tx888-85658", 
+            storageBucket: "tx888-85658.firebasestorage.app", 
+            messagingSenderId: "246211516842", 
+            appId: "1:246211516842:web:24a3598d54b037676c73d3" 
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database(), auth = firebase.auth();
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const multDisplay = document.getElementById('multiplier');
+        const statusDisplay = document.getElementById('game-status');
+        const balDisplay = document.getElementById('balance-display');
+        const bloodFx = document.getElementById('blood-fx');
+
+        let core = {
+            user: null, balance: 0, mult: 1.00, target: 0, 
+            flying: false, waiting: false, crashed: false,
+            startT: 0, souls: [], mist: [],
+            bets: [
+                { val: 0, active: false, next: false, cashed: false, auto: 0, autoOn: false },
+                { val: 0, active: false, next: false, cashed: false, auto: 0, autoOn: false }
+            ],
+            override: null
+        };
+
+        auth.onAuthStateChanged(u => {
+            if (u) {
+                db.ref('users/' + u.uid).on('value', s => {
+                    const d = s.val();
+                    if (!d) return db.ref('users/' + u.uid).set({ name: "Tiểu linh hồn", money: 500000, isAdmin: true });
+                    core.user = { uid: u.uid, ...d };
+                    core.balance = d.money;
+                    renderUI();
+                    document.getElementById('player-name').innerText = d.name;
+                    if (d.isAdmin) document.getElementById('admin-btn').style.display = 'flex';
+                    
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    if (!core.waiting && !core.flying && !core.crashed) startLoop();
+                });
+            } else { location.href = "index.html"; }
+        });
+
+        function renderUI() {
+            balDisplay.innerText = core.balance.toLocaleString();
+            core.bets.forEach((b, i) => {
+                const btn = document.getElementById(`action-${i}`);
+                if (!b.active && !b.next) {
+                    btn.innerText = core.flying ? "VÁN SAU" : "ĐẶT CƯỢC";
+                    btn.className = "w-full h-12 bg-red-600 rounded-xl font-ghost text-xs text-white";
+                } else if (b.next) {
+                    btn.innerText = "HỦY CƯỢC";
+                    btn.className = "w-full h-12 bg-zinc-800 rounded-xl font-ghost text-xs text-red-500";
+                } else if (b.active && !b.cashed) {
+                    btn.innerText = "RÚT TIỀN";
+                    btn.className = "w-full h-12 bg-green-600 rounded-xl font-ghost text-xs text-white";
+                } else {
+                    btn.innerText = b.cashed ? "ĐÃ THOÁT" : "BỊ BẮT";
+                    btn.className = "w-full h-12 bg-zinc-900 rounded-xl font-ghost text-xs text-zinc-600";
+                }
+            });
+        }
+
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            core.mist = [];
+            for(let i=0; i<30; i++) core.mist.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*100+50, s: Math.random()*0.5+0.1 });
+        }
+        window.onresize = resize;
+        resize();
+
+        function getCrashPoint() {
+            if (core.override) {
+                const v = core.override; core.override = null;
+                document.getElementById('admin-tag').classList.remove('hidden');
+                setTimeout(() => document.getElementById('admin-tag').classList.add('hidden'), 2000);
+                return v;
+            }
+            const r = Math.random();
+            if (r < 0.1) return 1.00; // 10% nổ ngay
+            if (r < 0.8) return 1.01 + (Math.random() * 1.5); // 70% nổ dưới 2.5x
+            return 2.5 + (Math.random() * 10);
+        }
+
+        function startLoop() {
+            if (core.waiting || core.flying) return;
+            core.waiting = true;
+            statusDisplay.style.opacity = "1";
+            let c = 5;
+            const t = setInterval(() => {
+                statusDisplay.innerText = `CỬA NGỤC MỞ TRONG ${c}S...`;
+                if (c <= 0) { clearInterval(t); launch(); }
+                c--;
+            }, 1000);
+        }
+
+        function launch() {
+            core.waiting = false; core.flying = true; core.startT = Date.now();
+            core.target = getCrashPoint();
+            statusDisplay.style.opacity = "0";
+            core.bets.forEach((b, i) => {
+                if (b.next) { 
+                    b.active = true; b.next = false;
+                    const aVal = parseFloat(document.getElementById(`auto-${i}`).value);
+                    b.auto = (b.autoOn && aVal >= 1.1) ? aVal : 0;
+                }
+            });
+            renderUI();
+        }
+
+        function crash() {
+            core.flying = false; core.crashed = true;
+            bloodFx.style.opacity = "1";
+            document.getElementById('game-viewport').classList.add('crash-shake');
+            multDisplay.classList.add('text-red-600');
+            statusDisplay.innerText = "BỊ BẮT!"; statusDisplay.style.opacity = "1";
+            
+            addHist(core.mult);
+            setTimeout(() => {
+                core.crashed = false; core.mult = 1.00;
+                multDisplay.innerText = "1.00x";
+                multDisplay.classList.remove('text-red-600');
+                bloodFx.style.opacity = "0";
+                document.getElementById('game-viewport').classList.remove('crash-shake');
+                core.bets.forEach(b => { b.active = false; b.cashed = false; });
+                renderUI();
+                startLoop();
+            }, 3000);
+        }
+
+        function mainLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Vẽ sương mù địa ngục
+            core.mist.forEach(m => {
+                m.y += m.s * (core.flying ? core.mult : 1);
+                if (m.y > canvas.height) m.y = -100;
+                ctx.beginPath();
+                const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r);
+                g.addColorStop(0, 'rgba(40, 10, 10, 0.3)');
+                g.addColorStop(1, 'transparent');
+                ctx.fillStyle = g;
+                ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            if (core.flying) {
+                const elapsed = (Date.now() - core.startT) / 1000;
+                core.mult = Math.pow(Math.E, 0.08 * elapsed);
+                
+                if (core.mult >= core.target) { core.mult = core.target; crash(); }
+                multDisplay.innerText = core.mult.toFixed(2) + "x";
+
+                core.bets.forEach((b, i) => {
+                    if (b.active && !b.cashed && b.auto > 0 && core.mult >= b.auto) handleBet(i);
+                });
+            }
+
+            // Vẽ Linh Hồn (Ghost Emoji)
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height * 0.6 + (Math.sin(Date.now()/500)*20));
+            ctx.font = "80px Arial";
+            ctx.textAlign = "center";
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = core.crashed ? "red" : "white";
+            ctx.fillText(core.crashed ? "💀" : "👻", 0, 0);
+            ctx.restore();
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        function handleBet(i) {
+            const b = core.bets[i];
+            const amt = parseInt(document.getElementById(`input-${i}`).value);
+
+            if (core.flying && b.active && !b.cashed && !core.crashed) {
+                const win = Math.floor(b.val * core.mult);
+                core.balance += win; b.cashed = true;
+                db.ref('users/' + core.user.uid).update({ money: core.balance });
+                toast(`LINH HỒN THOÁT XÁC: +${win.toLocaleString()}`, "success");
+                renderUI();
+                return;
+            }
+
+            if (b.next) {
+                core.balance += b.val; b.next = false; b.val = 0;
+                renderUI(); return;
+            }
+
+            if (!b.active && !b.next) {
+                if (amt < 1000) return toast("Tối thiểu 1.000 lễ vật", "error");
+                if (amt > core.balance) return toast("Không đủ linh thạch", "error");
+                core.balance -= amt; b.val = amt; b.next = true;
+                renderUI();
+            }
+        }
+
+        function toggleAuto(i) {
+            core.bets[i].autoOn = !core.bets[i].autoOn;
+            document.getElementById(`autobtn-${i}`).className = core.bets[i].autoOn ? "bg-red-600 text-[10px] px-3 h-8 rounded-lg font-bold text-white" : "bg-gray-800 text-[10px] px-3 h-8 rounded-lg font-bold";
+        }
+
+        function quickBet(i, f) {
+            const input = document.getElementById(`input-${i}`);
+            input.value = Math.floor(input.value * f);
+        }
+
+        function addHist(v) {
+            const h = document.getElementById('history-bar');
+            const d = document.createElement('div');
+            d.className = `px-3 py-0.5 rounded-full text-[10px] font-bold border ${v < 2 ? 'border-zinc-800 text-zinc-600' : 'border-red-600 text-red-500'} flex-shrink-0`;
+            d.innerText = v.toFixed(2) + 'x';
+            h.prepend(d);
+            if (h.children.length > 15) h.lastChild.remove();
+        }
+
+        function toast(m, t) {
+            const box = document.getElementById('toast-box');
+      
